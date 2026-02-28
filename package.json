@@ -1,0 +1,40 @@
+{
+  "name": "baseline",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:native": "turbo -F native dev",
+    "dev:web": "turbo -F web dev",
+    "dev:server": "turbo -F server dev",
+    "db:push": "turbo -F @baseline/db db:push",
+    "db:studio": "turbo -F @baseline/db db:studio",
+    "db:generate": "turbo -F @baseline/db db:generate",
+    "db:migrate": "turbo -F @baseline/db db:migrate",
+    "db:start": "turbo -F @baseline/db db:start",
+    "db:watch": "turbo -F @baseline/db db:watch",
+    "db:stop": "turbo -F @baseline/db db:stop",
+    "db:down": "turbo -F @baseline/db db:down",
+    "check": "oxlint && oxfmt --write"
+  },
+  "dependencies": {
+    "@baseline/env": "*",
+    "dotenv": "^17.2.2",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@baseline/config": "*",
+    "@types/node": "^22.13.14",
+    "oxfmt": "^0.26.0",
+    "oxlint": "^1.41.0",
+    "turbo": "^2.6.3",
+    "typescript": "^5"
+  },
+  "packageManager": "npm@11.9.0"
+}
