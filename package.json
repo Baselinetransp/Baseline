@@ -15,6 +15,7 @@
     "dev:server": "turbo -F server dev",
     "db:push": "turbo -F @baseline/db db:push",
     "db:studio": "turbo -F @baseline/db db:studio",
+    "db:seed": "turbo -F @baseline/db db:seed",
     "db:generate": "turbo -F @baseline/db db:generate",
     "db:migrate": "turbo -F @baseline/db db:migrate",
     "db:start": "turbo -F @baseline/db db:start",
