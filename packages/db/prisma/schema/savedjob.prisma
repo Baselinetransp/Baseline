@@ -1,0 +1,14 @@
+// ─── Saved Jobs ───────────────────────────────────────────────────────────────
+
+model SavedJob {
+  id        String   @id @default(cuid())
+  jobId     String
+  userId    String
+  createdAt DateTime @default(now())
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, userId])
+  @@index([userId])
+  @@map("saved_jobs")
+}

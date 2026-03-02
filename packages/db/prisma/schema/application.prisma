@@ -1,0 +1,31 @@
+// ─── Application ──────────────────────────────────────────────────────────────
+enum ApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  SHORTLISTED
+  INTERVIEW_SCHEDULED
+  OFFERED
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  jobId       String
+  driverId    String
+  status      ApplicationStatus @default(PENDING)
+  coverLetter String?           @db.Text
+  resumeUrl   String?
+  notes       String?           @db.Text  // recruiter notes
+  appliedAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  job    Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  driver DriverProfile @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, driverId])
+  @@index([jobId])
+  @@index([driverId])
+  @@map("applications")
+}

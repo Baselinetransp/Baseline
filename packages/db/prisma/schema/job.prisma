@@ -1,0 +1,55 @@
+// ─── Job ──────────────────────────────────────────────────────────────────────
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  TEMPORARY
+  SEASONAL
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+  CLOSED
+  FILLED
+}
+
+model Job {
+  id              String          @id @default(cuid())
+  recruiterId     String
+  companyId       String?
+  title           String
+  slug            String          @unique
+  description     String          @db.LongText
+  requirements    String?         @db.Text
+  benefits        String?         @db.Text
+  jobType         JobType         @default(FULL_TIME)
+  status          JobStatus       @default(DRAFT)
+  city            String?
+  state           String?
+  country         String          @default("US")
+  isRemote        Boolean         @default(false)
+  licenseRequired Json            // Array of LicenseClass
+  experienceLevel ExperienceLevel @default(ENTRY)
+  salaryMin       Int?            // monthly, in cents
+  salaryMax       Int?            // monthly, in cents
+  salaryNegotiable Boolean        @default(false)
+  endorsementsRequired Json?
+  startDate       DateTime?
+  expiresAt       DateTime?
+  viewCount       Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  recruiter    RecruiterProfile @relation(fields: [recruiterId], references: [id])
+  company      Company?         @relation(fields: [companyId], references: [id])
+  applications Application[]
+  savedJobs    SavedJob[]
+
+  @@index([recruiterId])
+  @@index([companyId])
+  @@index([status, createdAt])
+  @@index([city, state])
+  @@map("jobs")
+}

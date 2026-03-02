@@ -1,20 +1,34 @@
+enum UserRole {
+  DRIVER
+  RECRUITER
+  ADMIN
+}
+
+
 model User {
-  id            String    @id
+  id         String    @id @default(cuid())
   name          String    @db.Text
-  email         String
+  email         String    
   emailVerified Boolean   @default(false)
   image         String?   @db.Text
+  role          UserRole  @default(DRIVER)
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
 
+   // Profile relations (only one will be set based on role)
+  driverProfile  DriverProfile?
+  recruiterProfile RecruiterProfile?
+
   @@unique([email])
   @@map("user")
 }
 
+
 model Session {
-  id        String   @id
+  id         String    @id @default(cuid())
   expiresAt DateTime
   token     String
   createdAt DateTime @default(now())
@@ -30,7 +44,7 @@ model Session {
 }
 
 model Account {
-  id                    String    @id
+  id         String    @id @default(cuid())
   accountId             String    @db.Text
   providerId            String    @db.Text
   userId                String
@@ -50,7 +64,7 @@ model Account {
 }
 
 model Verification {
-  id         String   @id
+  id         String    @id @default(cuid())
   identifier String   @db.Text
   value      String   @db.Text
   expiresAt  DateTime
