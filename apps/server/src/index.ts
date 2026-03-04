@@ -7,7 +7,10 @@ import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express from "express";
 
+
 const app = express();
+
+app.use(express.json({ limit: '10mb' }));
 
 app.use(
   cors({
@@ -28,7 +31,6 @@ app.use(
   }),
 );
 
-app.use(express.json());
 
 app.get("/", (_req, res) => {
   res.status(200).send("OK");

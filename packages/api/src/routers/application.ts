@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { router, driverProcedure, recruiterProcedure } from "../index";
+import { router, driverProcedure, recruiterProcedure, protectedProcedure } from "../index";
 import prisma from "@baseline/db";
 import { ApplicationStatus } from "@baseline/db";
-
+import fs from "node:fs/promises";
+import path from "node:path";
 
 export const applicationsRouter = router({
   // ─── Driver Actions ──────────────────────────────────────────────────────────
@@ -13,6 +14,10 @@ export const applicationsRouter = router({
       z.object({
         jobId: z.string(),
         coverLetter: z.string().max(3000).optional(),
+        file: z.object({
+          name: z.string(),
+          data: z.string(), // Base64
+        }).optional(),
         resumeUrl: z.string().url().optional(),
       }),
     )
@@ -28,7 +33,6 @@ export const applicationsRouter = router({
         });
       }
 
-      // Check if job exists and is actually published
       const job = await prisma.job.findUnique({ where: { id: input.jobId } });
       if (!job || job.status !== "PUBLISHED") {
         throw new TRPCError({ 
@@ -37,23 +41,54 @@ export const applicationsRouter = router({
         });
       }
 
-      // Prisma's unique constraint handles the 'already applied' check, 
-      // but we wrap it in a try/catch for a clean user message.
+      let finalResumeUrl: string | undefined = input.resumeUrl;
+
+      if (input.file) {
+        try {
+          const uploadDir = path.join(process.cwd(), "public", "resumes");
+          await fs.mkdir(uploadDir, { recursive: true });
+
+          const fileName = `resume-${ctx.user.id}-${Date.now()}.pdf`;
+          const filePath = path.join(uploadDir, fileName);
+          
+          const base64Data = input.file.data.replace(/^data:application\/pdf;base64,/, "");
+          const buffer = Buffer.from(base64Data, "base64");
+
+          await fs.writeFile(filePath, buffer);
+          finalResumeUrl = `/resumes/${fileName}`;
+
+          await prisma.driverProfile.update({
+            where: { userId: ctx.user.id },
+            data: { resumeUrl: finalResumeUrl }
+          });
+        } catch (error) {
+          console.error("Resume upload failed:", error);
+          throw new TRPCError({ 
+            code: "INTERNAL_SERVER_ERROR", 
+            message: "Failed to save the uploaded resume." 
+          });
+        }
+      }
+
+      if (!finalResumeUrl) {
+        finalResumeUrl = driverProfile.resumeUrl ?? undefined;
+      }
+
+      if (!finalResumeUrl) {
+        throw new TRPCError({ 
+          code: "BAD_REQUEST", 
+          message: "A resume is required to apply." 
+        });
+      }
+
       try {
         return await prisma.application.create({
           data: {
             jobId: input.jobId,
             driverId: driverProfile.id,
             coverLetter: input.coverLetter,
-            resumeUrl: input.resumeUrl || driverProfile.resumeUrl,
-          },
-          include: { 
-            job: { 
-              select: { 
-                title: true, 
-                company: { select: { name: true } } 
-              } 
-            } 
+            resumeUrl: finalResumeUrl,
+            status: ApplicationStatus.PENDING,
           },
         });
       } catch (error) {
@@ -104,7 +139,6 @@ export const applicationsRouter = router({
 
       if (!application) throw new TRPCError({ code: "NOT_FOUND" });
       
-      // Safety check: Don't allow withdrawal if already rejected/accepted to keep history clean
       if (application.status === "ACCEPTED" || application.status === "REJECTED") {
         throw new TRPCError({ 
           code: "BAD_REQUEST", 
@@ -134,14 +168,11 @@ export const applicationsRouter = router({
         where: { userId: ctx.user.id },
       });
 
-      if (!recruiterProfile) throw new TRPCError({ code: "NOT_FOUND" });
-
-      // Verify ownership before showing any details
       const job = await prisma.job.findFirst({
-        where: { id: input.jobId, recruiterId: recruiterProfile.id },
+        where: { id: input.jobId, recruiterId: recruiterProfile?.id },
       });
 
-      if (!job) throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized to view these applications." });
+      if (!job) throw new TRPCError({ code: "FORBIDDEN" });
 
       const skip = (input.page - 1) * input.limit;
       const where = {
@@ -157,9 +188,7 @@ export const applicationsRouter = router({
           orderBy: { appliedAt: "desc" },
           include: {
             driver: {
-              include: {
-                user: { select: { name: true, email: true, image: true } },
-              },
+              include: { user: { select: { name: true, email: true, image: true } } },
             },
           },
         }),
@@ -182,13 +211,10 @@ export const applicationsRouter = router({
         where: { userId: ctx.user.id },
       });
 
-      if (!recruiterProfile) throw new TRPCError({ code: "NOT_FOUND" });
-
-      // Ensure the recruiter owns the job this application is for
       const application = await prisma.application.findFirst({
         where: {
           id: input.applicationId,
-          job: { recruiterId: recruiterProfile.id },
+          job: { recruiterId: recruiterProfile?.id },
         },
       });
 
@@ -201,5 +227,47 @@ export const applicationsRouter = router({
           notes: input.notes 
         },
       });
+    }),
+
+  // ─── Protected Security Action ───────────────────────────────────────────────
+
+  getResume: protectedProcedure
+    .input(z.object({ applicationId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const application = await prisma.application.findUnique({
+        where: { id: input.applicationId },
+        include: { 
+          job: { select: { recruiterId: true } },
+          driver: { select: { userId: true } }
+        },
+      });
+
+      if (!application) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const isOwner = application.driver.userId === ctx.user.id;
+      const recruiterProfile = await prisma.recruiterProfile.findUnique({ where: { userId: ctx.user.id } });
+      const isRecruiter = application.job.recruiterId === recruiterProfile?.id;
+
+      if (!isOwner && !isRecruiter) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized." });
+      }
+
+      const relativePath = application.resumeUrl;
+      if (!relativePath) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "No resume URL found." });
+      }
+
+      try {
+        const filePath = path.join(process.cwd(), "public", relativePath);
+        const fileBuffer = await fs.readFile(filePath);
+
+        return {
+          base64: fileBuffer.toString("base64"),
+          fileName: path.basename(filePath),
+        };
+      } catch (error) {
+        console.error("File Read Error:", error);
+        throw new TRPCError({ code: "NOT_FOUND", message: "Resume file missing." });
+      }
     }),
 });
