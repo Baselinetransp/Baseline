@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, publicProcedure, recruiterProcedure } from "../index";
-import prisma from "@baseline/db";
+import prisma, { Prisma } from "@baseline/db";
 import { JobStatus, JobType, ExperienceLevel } from "@baseline/db";
 import slugify from "slugify";
 
@@ -51,7 +51,8 @@ export const jobsRouter = router({
    * Public: List jobs with full filtering and pagination
    */
   list: publicProcedure.input(jobsListSchema).query(async ({ input }) => {
-    const { page, limit, search, city, state, jobType, experienceLevel, salaryMin, isRemote } = input;
+    const { page, limit, search, city, state, jobType, experienceLevel, salaryMin, isRemote } =
+      input;
     const skip = (page - 1) * limit;
 
     const where = {
@@ -96,31 +97,29 @@ export const jobsRouter = router({
   /**
    * Public: Get job details and increment view count
    */
-  bySlug: publicProcedure
-    .input(z.object({ slug: z.string() }))
-    .query(async ({ input }) => {
-      const job = await prisma.job.findUnique({
-        where: { slug: input.slug },
-        include: {
-          company: true,
-          recruiter: {
-            select: { title: true, user: { select: { name: true, image: true } } },
-          },
-          _count: { select: { applications: true } },
+  bySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
+    const job = await prisma.job.findUnique({
+      where: { slug: input.slug },
+      include: {
+        company: true,
+        recruiter: {
+          select: { title: true, user: { select: { name: true, image: true } } },
         },
-      });
+        _count: { select: { applications: true } },
+      },
+    });
 
-      if (!job || job.status !== JobStatus.PUBLISHED) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Job not found." });
-      }
+    if (!job || job.status !== JobStatus.PUBLISHED) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Job not found." });
+    }
 
-      await prisma.job.update({
-        where: { id: job.id },
-        data: { viewCount: { increment: 1 } },
-      });
+    await prisma.job.update({
+      where: { id: job.id },
+      data: { viewCount: { increment: 1 } },
+    });
 
-      return job;
-    }),
+    return job;
+  }),
 
   /**
    * Recruiter: Create a new job post
@@ -220,5 +219,78 @@ export const jobsRouter = router({
           company: { select: { name: true, logoUrl: true } },
         },
       });
+    }),
+
+  /**
+   * Job: search a new job post
+   */
+
+  search: publicProcedure
+    .input(
+      z.object({
+        query: z.string().optional(),
+        location: z.string().optional(),
+        type: z.enum(["FULL_TIME", "PART_TIME", "CONTRACT", "FREELANCE"]).optional(),
+        minSalary: z.number().optional(),
+        page: z.number().min(1).default(1),
+        limit: z.number().min(1).max(50).default(10),
+      }),
+    )
+    .query(async ({ input }) => {
+      const skip = (input.page - 1) * input.limit;
+
+      // Build dynamic filter object
+      const where: Prisma.JobWhereInput = {
+        status: "PUBLISHED",
+        AND: [
+          input.query
+            ? {
+                OR: [
+                  { title: { contains: input.query, mode: "insensitive" } },
+                  { description: { contains: input.query, mode: "insensitive" } },
+                  {
+                    company: {
+                      name: { contains: input.query, mode: "insensitive" },
+                    },
+                  },
+                ],
+              }
+            : {},
+          input.location
+            ? {
+                OR: [
+                  { city: { contains: input.location, mode: "insensitive" } },
+                  { state: { contains: input.location, mode: "insensitive" } },
+                ],
+              }
+            : {},
+          input.type ? { type: input.type } : {},
+          input.minSalary ? { salaryMax: { gte: input.minSalary } } : {},
+        ].filter((condition) => Object.keys(condition).length > 0), // Clean up empty objects
+      };
+
+      const [jobs, total] = await prisma.$transaction([
+        prisma.job.findMany({
+          where,
+          include: {
+            company: {
+              select: { name: true, logoUrl: true, city: true, state: true },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          skip,
+          take: input.limit,
+        }),
+        prisma.job.count({ where }),
+      ]);
+
+      return {
+        jobs,
+        pagination: {
+          total,
+          totalPages: Math.ceil(total / input.limit),
+          currentPage: input.page,
+        },
+      };
     }),
 });
