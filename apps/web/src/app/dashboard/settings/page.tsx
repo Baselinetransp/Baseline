@@ -1,28 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, ChevronDown, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [accountType, setAccountType] = useState("jobseeker");
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div>
+    <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
+      {/* Header - Desktop Only */}
+      <div className="hidden md:block">
         <h1 className="text-3xl font-heading font-bold">Settings</h1>
       </div>
 
       {/* Tabs */}
       <div className="bg-white rounded-lg border overflow-hidden">
-        <div className="flex border-b">
+        <div className="flex border-b overflow-x-auto">
           <button
             onClick={() => setActiveTab("profile")}
-            className={`px-6 py-4 font-medium text-sm border-b-2 transition-colors ${
+            className={`px-4 md:px-6 py-3 md:py-4 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
               activeTab === "profile"
                 ? "border-primary-alt text-primary-alt"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -32,7 +33,7 @@ export default function SettingsPage() {
           </button>
           <button
             onClick={() => setActiveTab("login")}
-            className={`px-6 py-4 font-medium text-sm border-b-2 transition-colors ${
+            className={`px-4 md:px-6 py-3 md:py-4 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
               activeTab === "login"
                 ? "border-primary-alt text-primary-alt"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -42,7 +43,7 @@ export default function SettingsPage() {
           </button>
           <button
             onClick={() => setActiveTab("notifications")}
-            className={`px-6 py-4 font-medium text-sm border-b-2 transition-colors ${
+            className={`px-4 md:px-6 py-3 md:py-4 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
               activeTab === "notifications"
                 ? "border-primary-alt text-primary-alt"
                 : "border-transparent text-muted-foreground hover:text-foreground"
@@ -53,28 +54,28 @@ export default function SettingsPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           {activeTab === "profile" && (
-            <div className="space-y-8">
+            <div className="space-y-6 md:space-y-8">
               {/* Basic Information */}
               <div>
-                <h2 className="text-xl font-semibold mb-2">Basic Information</h2>
-                <p className="text-sm text-muted-foreground mb-6">
+                <h2 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Basic Information</h2>
+                <p className="text-sm text-muted-foreground mb-4 md:mb-6">
                   This is your personal information that you can update anytime.
                 </p>
 
                 {/* Profile Photo */}
-                <div className="mb-6">
-                  <h3 className="font-medium mb-2">Profile Photo</h3>
+                <div className="mb-6 pb-6 border-b">
+                  <h3 className="font-medium mb-1 md:mb-2">Profile Photo</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     This image will be shown publicly as your profile picture, it will help recruiters recognize you!
                   </p>
-                  <div className="flex items-center gap-6">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-alt to-primary-alt/60 flex items-center justify-center">
-                      <span className="text-2xl font-semibold text-black">JG</span>
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+                    <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-primary-alt to-primary-alt/60 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xl md:text-2xl font-semibold text-black">JG</span>
                     </div>
-                    <div className="flex-1 border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 text-center hover:border-primary-alt/50 transition-colors cursor-pointer">
-                      <Upload className="h-8 w-8 text-primary-alt mx-auto mb-2" />
+                    <div className="flex-1 w-full border-2 border-dashed border-muted-foreground/30 rounded-lg p-6 md:p-8 text-center hover:border-primary-alt/50 transition-colors cursor-pointer">
+                      <Upload className="h-6 w-6 md:h-8 md:w-8 text-primary-alt mx-auto mb-2" />
                       <p className="text-sm mb-1">
                         <span className="text-primary-alt font-medium">Click to replace</span> or drag and drop
                       </p>
@@ -94,66 +95,73 @@ export default function SettingsPage() {
                       <Input
                         id="fullName"
                         type="text"
-                        placeholder="This is placeholder"
+                        defaultValue="Jake Gyll"
                         className="mt-1.5"
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="phone">
-                          Phone Number <span className="text-red-500">*</span>
-                        </Label>
+                    <div>
+                      <Label htmlFor="phone">
+                        Phone Number <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        defaultValue="+44 1245 572 135"
+                        className="mt-1.5"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="email">
+                        Email <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        defaultValue="Jakegyll@gmail.com"
+                        className="mt-1.5"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="dob">
+                        Date of Birth <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="relative mt-1.5">
                         <Input
-                          id="phone"
-                          type="tel"
-                          placeholder="This is placeholder"
-                          className="mt-1.5"
+                          id="dob"
+                          type="text"
+                          defaultValue="09/08/1997"
+                          className="pr-10"
                         />
-                      </div>
-                      <div>
-                        <Label htmlFor="email">
-                          Email <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="This is placeholder"
-                          className="mt-1.5"
-                        />
+                        <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="dob">
-                          Date of Birth <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="dob"
-                          type="date"
-                          placeholder="This is placeholder"
-                          className="mt-1.5"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="gender">
-                          Gender <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
+                    <div>
+                      <Label htmlFor="gender">
+                        Gender <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="relative mt-1.5">
+                        <select
                           id="gender"
-                          type="text"
-                          placeholder="This is placeholder"
-                          className="mt-1.5"
-                        />
+                          className="w-full h-10 px-3 py-2 border rounded-md bg-white text-sm appearance-none cursor-pointer"
+                          defaultValue="male"
+                        >
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                          <option value="other">Other</option>
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Account Type */}
-                <div className="pt-6 border-t">
-                  <h3 className="font-medium mb-2">Account Type</h3>
+                <div className="pt-6 border-t mt-6">
+                  <h3 className="font-medium mb-1">Account Type</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     You can update your account type
                   </p>
@@ -178,7 +186,7 @@ export default function SettingsPage() {
                         </div>
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium mb-1">Job Seeker</h4>
+                        <h4 className="font-medium mb-0.5">Job Seeker</h4>
                         <p className="text-sm text-muted-foreground">Looking for a job</p>
                       </div>
                     </div>
@@ -203,9 +211,9 @@ export default function SettingsPage() {
                         </div>
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium mb-1">Employer</h4>
+                        <h4 className="font-medium mb-0.5">Employer</h4>
                         <p className="text-sm text-muted-foreground">
-                          Hiring, sourcing candidates, or posting jobs
+                          Hiring, sourcing candidates, or posting a jobs
                         </p>
                       </div>
                     </div>
@@ -213,8 +221,8 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Save Button */}
-                <div className="pt-6 flex justify-end">
-                  <Button className="bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold px-8">
+                <div className="pt-6">
+                  <Button className="w-full md:w-auto bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold px-8">
                     Save Profile
                   </Button>
                 </div>
@@ -225,12 +233,12 @@ export default function SettingsPage() {
           {activeTab === "login" && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold mb-2">Login Details</h2>
+                <h2 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Login Details</h2>
                 <p className="text-sm text-muted-foreground mb-6">
                   Update your login credentials to keep your account secure.
                 </p>
 
-                <div className="space-y-4 max-w-md">
+                <div className="space-y-4">
                   <div>
                     <Label htmlFor="currentPassword">Current Password</Label>
                     <Input
@@ -262,7 +270,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="pt-4">
-                    <Button className="bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold">
+                    <Button className="w-full md:w-auto bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold">
                       Update Password
                     </Button>
                   </div>
@@ -274,73 +282,60 @@ export default function SettingsPage() {
           {activeTab === "notifications" && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold mb-2">Notification Settings</h2>
+                <h2 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Basic Information</h2>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Choose how you want to be notified about updates and activity.
+                  This is notifications preferences that you can update anytime.
                 </p>
 
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between py-4 border-b">
-                    <div>
-                      <h4 className="font-medium mb-1">Email Notifications</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Receive email notifications about your applications
-                      </p>
-                    </div>
-                    <label className="relative inline-block w-12 h-6 cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-12 h-6 bg-gray-200 peer-checked:bg-primary-alt rounded-full peer transition-colors"></div>
-                      <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-6"></div>
-                    </label>
-                  </div>
+                <div className="border-b pb-6 mb-6">
+                  <h3 className="font-medium mb-1">Notifications</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Customize your preferred notification settings
+                  </p>
 
-                  <div className="flex items-start justify-between py-4 border-b">
-                    <div>
-                      <h4 className="font-medium mb-1">Application Updates</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified when companies review your applications
-                      </p>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <Checkbox id="applications" defaultChecked className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="applications" className="font-medium cursor-pointer">
+                          Applications
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          These are notifications for jobs that you have applied to
+                        </p>
+                      </div>
                     </div>
-                    <label className="relative inline-block w-12 h-6 cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-12 h-6 bg-gray-200 peer-checked:bg-primary-alt rounded-full peer transition-colors"></div>
-                      <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-6"></div>
-                    </label>
-                  </div>
 
-                  <div className="flex items-start justify-between py-4 border-b">
-                    <div>
-                      <h4 className="font-medium mb-1">Job Recommendations</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Receive personalized job recommendations based on your profile
-                      </p>
+                    <div className="flex items-start gap-3">
+                      <Checkbox id="jobs" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="jobs" className="font-medium cursor-pointer">
+                          Jobs
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          These are notifications for job openings that suit your profile
+                        </p>
+                      </div>
                     </div>
-                    <label className="relative inline-block w-12 h-6 cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" />
-                      <div className="w-12 h-6 bg-gray-200 peer-checked:bg-primary-alt rounded-full peer transition-colors"></div>
-                      <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-6"></div>
-                    </label>
-                  </div>
 
-                  <div className="flex items-start justify-between py-4 border-b">
-                    <div>
-                      <h4 className="font-medium mb-1">Messages</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified when you receive new messages from employers
-                      </p>
+                    <div className="flex items-start gap-3">
+                      <Checkbox id="recommendations" className="mt-1" />
+                      <div className="flex-1">
+                        <Label htmlFor="recommendations" className="font-medium cursor-pointer">
+                          Recommendations
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          These are notifications for personalized recommendations from our recruiters
+                        </p>
+                      </div>
                     </div>
-                    <label className="relative inline-block w-12 h-6 cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-12 h-6 bg-gray-200 peer-checked:bg-primary-alt rounded-full peer transition-colors"></div>
-                      <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-6"></div>
-                    </label>
                   </div>
+                </div>
 
-                  <div className="pt-4">
-                    <Button className="bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold">
-                      Save Preferences
-                    </Button>
-                  </div>
+                <div className="pt-2">
+                  <Button className="w-full md:w-auto bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold">
+                    Update Email
+                  </Button>
                 </div>
               </div>
             </div>

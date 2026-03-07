@@ -1,13 +1,59 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [userType, setUserType] = useState<"DRIVER" | "RECRUITER">("DRIVER");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    try {
+      await authClient.signIn.email({
+        email,
+        password,
+        callbackURL: "/dashboard",
+      });
+
+      // Redirect to dashboard on success
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Invalid email or password.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+    } catch (err: any) {
+      setError(err.message || "Failed to sign in with Google.");
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left Column - Image */}
@@ -58,12 +104,47 @@ export default function LoginPage() {
           <div className="text-center">
             <h1 className="font-heading text-3xl font-bold mb-2">Welcome back</h1>
             <p className="text-muted-foreground">
-              Log in to your account to continue your job search
+              {userType === "DRIVER"
+                ? "Log in to continue your job search"
+                : "Log in to manage your job listings"}
             </p>
           </div>
 
+          {/* User Type Toggle */}
+          <div className="flex gap-2 p-1 bg-muted rounded-lg">
+            <button
+              type="button"
+              onClick={() => setUserType("DRIVER")}
+              className={`flex-1 py-2.5 px-4 rounded-md font-medium transition-all ${
+                userType === "DRIVER"
+                  ? "bg-white shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Driver
+            </button>
+            <button
+              type="button"
+              onClick={() => setUserType("RECRUITER")}
+              className={`flex-1 py-2.5 px-4 rounded-md font-medium transition-all ${
+                userType === "RECRUITER"
+                  ? "bg-white shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Recruiter
+            </button>
+          </div>
+
           {/* Sign In with Google */}
-          <Button variant="outline" className="w-full py-6" size="lg">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full py-6"
+            size="lg"
+            onClick={handleGoogleSignIn}
+            disabled={isLoading}
+          >
             <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
@@ -95,14 +176,23 @@ export default function LoginPage() {
           </div>
 
           {/* Login Form */}
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="Enter your email address"
                 className="py-6"
+                required
+                disabled={isLoading}
               />
             </div>
 
@@ -110,9 +200,12 @@ export default function LoginPage() {
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="Enter your password"
                 className="py-6"
+                required
+                disabled={isLoading}
               />
             </div>
 
@@ -138,8 +231,9 @@ export default function LoginPage() {
               type="submit"
               className="w-full py-6 bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold"
               size="lg"
+              disabled={isLoading}
             >
-              Login
+              {isLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
 

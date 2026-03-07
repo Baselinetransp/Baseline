@@ -3,13 +3,59 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { authClient } from "@/lib/auth-client";
 
 export default function SignUpPage() {
-  const [userType, setUserType] = useState<"jobseeker" | "company">("jobseeker");
+  const router = useRouter();
+  const [userType, setUserType] = useState<"DRIVER" | "RECRUITER">("DRIVER");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const name = formData.get("fullname") as string;
+
+    try {
+      await authClient.signUp.email({
+        email,
+        password,
+        name,
+        role: userType,
+        callbackURL: "/dashboard",
+      });
+
+      // Redirect to dashboard on success
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Failed to create account. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true);
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/dashboard",
+      });
+    } catch (err: any) {
+      setError(err.message || "Failed to sign up with Google.");
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -59,38 +105,51 @@ export default function SignUpPage() {
 
           {/* Header */}
           <div className="text-center">
-            <h1 className="font-heading text-3xl font-bold mb-2">Get more opportunities</h1>
+            <h1 className="font-heading text-3xl font-bold mb-2">
+              {userType === "DRIVER" ? "Get more opportunities" : "Find top drivers"}
+            </h1>
             <p className="text-muted-foreground">
-              Create an account to access thousands of driving jobs
+              {userType === "DRIVER"
+                ? "Create an account to access thousands of driving jobs"
+                : "Create an account to post jobs and find qualified drivers"}
             </p>
           </div>
 
           {/* User Type Toggle */}
           <div className="flex gap-2 p-1 bg-muted rounded-lg">
             <button
-              onClick={() => setUserType("jobseeker")}
+              type="button"
+              onClick={() => setUserType("DRIVER")}
               className={`flex-1 py-2.5 px-4 rounded-md font-medium transition-all ${
-                userType === "jobseeker"
+                userType === "DRIVER"
                   ? "bg-white shadow-sm text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Job Seeker
+              Driver
             </button>
             <button
-              onClick={() => setUserType("company")}
+              type="button"
+              onClick={() => setUserType("RECRUITER")}
               className={`flex-1 py-2.5 px-4 rounded-md font-medium transition-all ${
-                userType === "company"
+                userType === "RECRUITER"
                   ? "bg-white shadow-sm text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Company
+              Recruiter
             </button>
           </div>
 
           {/* Sign Up with Google */}
-          <Button variant="outline" className="w-full py-6" size="lg">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full py-6"
+            size="lg"
+            onClick={handleGoogleSignUp}
+            disabled={isLoading}
+          >
             <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
@@ -122,14 +181,23 @@ export default function SignUpPage() {
           </div>
 
           {/* Sign Up Form */}
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="fullname">Full Name</Label>
               <Input
                 id="fullname"
+                name="fullname"
                 type="text"
                 placeholder="Enter your full name"
                 className="py-6"
+                required
+                disabled={isLoading}
               />
             </div>
 
@@ -137,9 +205,12 @@ export default function SignUpPage() {
               <Label htmlFor="email">Email Address</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="Enter your email address"
                 className="py-6"
+                required
+                disabled={isLoading}
               />
             </div>
 
@@ -147,9 +218,13 @@ export default function SignUpPage() {
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="Enter your password (min 8 characters)"
                 className="py-6"
+                required
+                minLength={8}
+                disabled={isLoading}
               />
             </div>
 
@@ -171,8 +246,9 @@ export default function SignUpPage() {
               type="submit"
               className="w-full py-6 bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold"
               size="lg"
+              disabled={isLoading}
             >
-              Continue
+              {isLoading ? "Creating account..." : "Continue"}
             </Button>
           </form>
 
