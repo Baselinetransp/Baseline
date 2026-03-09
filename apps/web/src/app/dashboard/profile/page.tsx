@@ -1,75 +1,53 @@
 "use client";
 
-import { Mail, Phone, MapPin, Globe, Edit, ChevronRight } from "lucide-react";
+import { Mail, Phone, MapPin, Edit, Award, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function ProfilePage() {
   const profile = {
     name: "Jake Gyll",
-    title: "Product Designer",
-    company: "Twitter",
+    title: "HGV Driver",
+    company: "Swift Logistics",
     location: "Manchester, UK",
     email: "jakegyll@email.com",
     phone: "+44 1245 572 135",
-    languages: "English, French",
+    licenseType: "Category C+E",
+    yearsExperience: "8 years",
     openForOpportunities: true,
   };
 
-  const aboutMe = `I'm a product designer + filmmaker currently working remotely at Twitter from beautiful Manchester, United Kingdom. I'm passionate about designing digital products that have a positive impact on the world.
-
-For 10 years, I've specialized in interface, experience & interaction design as well as working in user research and product strategy for product agencies, big tech companies & start-ups.`;
+  const aboutMe = `Experienced HGV driver with 8 years in long-haul and regional transport. Clean driving record, CPC qualified, and ADR certified. Reliable and punctual with strong knowledge of UK and European routes.`;
 
   const experiences = [
     {
-      company: "Twitter",
-      logo: "🐦",
-      position: "Product Designer",
-      duration: "Jun 2019 - Present (1y 1m)",
+      company: "Swift Logistics",
+      logo: "🚛",
+      position: "HGV Class 1 Driver",
+      duration: "Mar 2020 - Present",
       type: "Full-Time",
       description:
-        "Created and executed social media plan for 10 brands utilizing multiple features and content types to increase brand outreach, engagement, and leads.",
+        "Long-haul deliveries across UK and Europe. Responsible for vehicle checks, load security, and timely deliveries.",
     },
     {
-      company: "GoDaddy",
-      logo: "🌐",
-      position: "Growth Marketing Designer",
-      duration: "Jun 2011 - May 2019 (8y)",
+      company: "Express Freight",
+      logo: "📦",
+      position: "HGV Class 2 Driver",
+      duration: "Jan 2016 - Feb 2020",
       type: "Full-Time",
       description:
-        "Developed digital marketing strategies, activation plans, proposals, contests and promotions for client media brand.",
+        "Regional distribution for retail clients. Multi-drop deliveries with excellent customer service record.",
     },
   ];
 
-  const education = [
-    {
-      school: "Harvard University",
-      logo: "H",
-      degree: "Postgraduate degree, Applied Psychology",
-      duration: "2010 - 2012",
-      description:
-        "As an Applied Psychologist in the field of Consumer and Society, I am specialized in creating business opportunities through observation, understanding, and interpretation.",
-    },
-    {
-      school: "University of Toronto",
-      logo: "U",
-      degree: "Bachelor of Arts, Visual Communication",
-      duration: "2005 - 2010",
-    },
-  ];
-
-  const activities = [
-    { platform: "Facebook", url: "facebook.com/jakegyll" },
-    { platform: "Pinterest", url: "pinterest.com/jakegyll" },
-  ];
-
-  const portfolios = [
-    { title: "Clinically - clinic & health care website", color: "bg-orange-100" },
-    { title: "Flavor - food delivery mobile app", color: "bg-green-100" },
+  const certifications = [
+    { name: "Driver CPC", issuer: "DVSA", year: "2023" },
+    { name: "ADR Certificate", issuer: "SQA", year: "2022" },
+    { name: "Digital Tachograph Card", issuer: "DVLA", year: "2024" },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto overflow-hidden">
       {/* Mobile Profile Header */}
       <div className="md:hidden">
         {/* Profile Card */}
@@ -195,83 +173,36 @@ For 10 years, I've specialized in interface, experience & interaction design as 
                   </div>
                 </div>
               ))}
-              <Button variant="ghost" className="w-full text-primary-alt hover:text-primary-alt hover:bg-primary-alt/10 text-sm">
-                Show 2 more experiences <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
             </div>
           </div>
 
-          {/* Education */}
+          {/* Certifications */}
           <div className="bg-white rounded-lg border p-4 md:p-6">
             <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h3 className="font-semibold text-base md:text-lg">Education</h3>
-              <button className="text-primary-alt hover:text-primary-alt/80">
-                <Edit className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              {education.map((edu, index) => (
-                <div key={index} className="flex gap-3 md:gap-4 pb-4 border-b last:border-0 last:pb-0">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-lg md:text-xl font-bold text-red-600">{edu.logo}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-sm md:text-base mb-0.5">{edu.school}</h4>
-                    <p className="text-xs md:text-sm text-muted-foreground mb-1">{edu.degree}</p>
-                    <p className="text-xs text-muted-foreground mb-2">{edu.duration}</p>
-                    {edu.description && (
-                      <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{edu.description}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-              <Button variant="ghost" className="w-full text-primary-alt hover:text-primary-alt hover:bg-primary-alt/10 text-sm">
-                Show 2 more educations <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Activities */}
-          <div className="bg-white rounded-lg border p-4 md:p-6">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h3 className="font-semibold text-base md:text-lg">Activities</h3>
+              <h3 className="font-semibold text-base md:text-lg">Certifications</h3>
               <button className="text-primary-alt hover:text-primary-alt/80">
                 <Edit className="h-4 w-4" />
               </button>
             </div>
             <div className="space-y-3">
-              {activities.map((activity, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <Globe className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm text-blue-600">{activity.url}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Portfolios */}
-          <div className="bg-white rounded-lg border p-4 md:p-6">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h3 className="font-semibold text-base md:text-lg">Portfolios</h3>
-              <button className="text-primary-alt hover:text-primary-alt/80">
-                <Edit className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
-              {portfolios.map((item, index) => (
-                <div key={index} className={`aspect-video ${item.color} rounded-lg overflow-hidden relative group`}>
-                  <div className="absolute inset-0 flex items-end p-3">
-                    <span className="text-xs font-medium text-foreground/80">{item.title}</span>
+              {certifications.map((cert, index) => (
+                <div key={index} className="flex items-center gap-3 pb-3 border-b last:border-0 last:pb-0">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Award className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm">{cert.name}</h4>
+                    <p className="text-xs text-muted-foreground">{cert.issuer} • {cert.year}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Additional Details */}
+          {/* Contact & License Details */}
           <div className="bg-white rounded-lg border p-4 md:p-6">
             <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h3 className="font-semibold text-base md:text-lg">Additional Details</h3>
+              <h3 className="font-semibold text-base md:text-lg">Contact & License Details</h3>
               <button className="text-primary-alt hover:text-primary-alt/80">
                 <Edit className="h-4 w-4" />
               </button>
@@ -286,32 +217,8 @@ For 10 years, I've specialized in interface, experience & interaction design as 
                 <span className="text-sm">{profile.phone}</span>
               </div>
               <div className="flex items-center gap-3">
-                <Globe className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm">{profile.languages}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Social Links */}
-          <div className="bg-white rounded-lg border p-4 md:p-6">
-            <div className="flex items-center justify-between mb-3 md:mb-4">
-              <h3 className="font-semibold text-base md:text-lg">Social Links</h3>
-              <button className="text-primary-alt hover:text-primary-alt/80">
-                <Edit className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Globe className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-blue-600">instagram.com/jakegyll</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Globe className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-blue-600">twitter.com/jakegyll</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <Globe className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-blue-600">jakegyll.com</span>
+                <Truck className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm">{profile.licenseType}</span>
               </div>
             </div>
           </div>

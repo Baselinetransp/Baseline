@@ -57,7 +57,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left Column - Image */}
-      <div className="hidden lg:flex flex-col bg-white relative overflow-hidden">
+      <div className="hidden lg:flex flex-1 flex-col bg-white relative overflow-hidden">
         <div className="absolute top-6 left-6 z-10">
           <Link href="/" className="flex items-center">
             <Image
@@ -71,13 +71,12 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <div className="flex items-center justify-center w-full h-full p-8">
+        <div className="flex-1 relative">
           <Image
             src="/images/graphic-3.svg"
             alt="Login Illustration"
-            width={800}
-            height={800}
-            className="w-full h-full object-contain"
+            fill
+            className="object-cover"
             priority
           />
         </div>

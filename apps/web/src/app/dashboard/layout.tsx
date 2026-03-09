@@ -13,7 +13,7 @@ export default function DashboardLayout({
       <div className="hidden md:block">
         <DashboardSidebar />
       </div>
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile Header - shown only on mobile */}
         <MobileHeader />
         {/* Desktop Header - hidden on mobile */}

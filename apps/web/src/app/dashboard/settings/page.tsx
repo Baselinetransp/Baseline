@@ -9,10 +9,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
-  const [accountType, setAccountType] = useState("jobseeker");
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
+    <div className="max-w-4xl mx-auto space-y-4 md:space-y-6 overflow-hidden">
       {/* Header - Desktop Only */}
       <div className="hidden md:block">
         <h1 className="text-3xl font-heading font-bold">Settings</h1>
@@ -154,67 +153,6 @@ export default function SettingsPage() {
                           <option value="other">Other</option>
                         </select>
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Account Type */}
-                <div className="pt-6 border-t mt-6">
-                  <h3 className="font-medium mb-1">Account Type</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    You can update your account type
-                  </p>
-                  <div className="space-y-3">
-                    <div
-                      onClick={() => setAccountType("jobseeker")}
-                      className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
-                        accountType === "jobseeker"
-                          ? "border-primary-alt bg-primary-alt/5"
-                          : "border-muted hover:border-muted-foreground/30"
-                      }`}
-                    >
-                      <div className="mt-0.5">
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            accountType === "jobseeker" ? "border-primary-alt" : "border-muted-foreground"
-                          }`}
-                        >
-                          {accountType === "jobseeker" && (
-                            <div className="w-3 h-3 rounded-full bg-primary-alt"></div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium mb-0.5">Job Seeker</h4>
-                        <p className="text-sm text-muted-foreground">Looking for a job</p>
-                      </div>
-                    </div>
-
-                    <div
-                      onClick={() => setAccountType("employer")}
-                      className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
-                        accountType === "employer"
-                          ? "border-primary-alt bg-primary-alt/5"
-                          : "border-muted hover:border-muted-foreground/30"
-                      }`}
-                    >
-                      <div className="mt-0.5">
-                        <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            accountType === "employer" ? "border-primary-alt" : "border-muted-foreground"
-                          }`}
-                        >
-                          {accountType === "employer" && (
-                            <div className="w-3 h-3 rounded-full bg-primary-alt"></div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium mb-0.5">Employer</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Hiring, sourcing candidates, or posting a jobs
-                        </p>
                       </div>
                     </div>
                   </div>

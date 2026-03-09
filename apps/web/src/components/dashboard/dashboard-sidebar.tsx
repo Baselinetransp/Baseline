@@ -5,7 +5,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Home,
-  MessageSquare,
   FileText,
   Search,
   Building2,
@@ -22,7 +21,6 @@ import { authClient } from "@/lib/auth-client";
 // Driver navigation items
 const driverNavItems = [
   { icon: Home, label: "Dashboard", href: "/dashboard" },
-  { icon: MessageSquare, label: "Messages", href: "/dashboard/messages", badge: 1 },
   { icon: FileText, label: "My Applications", href: "/dashboard/applications" },
   { icon: Search, label: "Find Jobs", href: "/dashboard/find-jobs" },
   { icon: Building2, label: "Browse Companies", href: "/dashboard/companies" },
@@ -35,7 +33,6 @@ const recruiterNavItems = [
   { icon: Briefcase, label: "My Jobs", href: "/dashboard/jobs" },
   { icon: PlusCircle, label: "Post New Job", href: "/dashboard/jobs/new" },
   { icon: Users, label: "Applications", href: "/dashboard/recruiter/applications" },
-  { icon: MessageSquare, label: "Messages", href: "/dashboard/messages", badge: 1 },
   { icon: Building2, label: "Company Profile", href: "/dashboard/company" },
   { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
 ];
