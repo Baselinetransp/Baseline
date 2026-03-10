@@ -7,6 +7,10 @@ import JobCard from "@/components/job-card";
 import CategoryCard from "@/components/category-card";
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
+import { HomePageClient } from "@/components/home-page-client";
+import { AnimatedSection } from "@/components/animated-section";
+import { HeroReveal } from "@/components/hero-reveal";
+import { ParallaxBackground } from "@/components/parallax-background";
 
 export default function HomePage() {
   // Sample data - will be replaced with actual API calls
@@ -108,217 +112,283 @@ export default function HomePage() {
   return (
     <>
       <Navigation />
-      <main>
-        {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-white to-accent/30 py-16 md:py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-12 items-start">
-              {/* Left Content */}
-              <div>
-                <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
-                  Discover
-                  <br />
-                  more than
-                  <br />
-                  <span className="text-primary-alt">5000+ Jobs</span>
-                </h1>
-                <p className="text-muted-foreground text-lg mb-8 max-w-lg">
-                  Great platform for the job seeker that passionate about driving and logistics. Find your dream job easier.
-                </p>
+      <HomePageClient>
+        <main>
+          {/* Hero Section */}
+          <section id="hero" className="relative bg-gradient-to-br from-white to-accent/30 py-16 md:py-24 snap-section md:snap-align-none min-h-[auto] md:min-h-[auto]">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid lg:grid-cols-2 gap-12 items-start">
+                {/* Left Content */}
+                <div>
+                  <HeroReveal index={0}>
+                    <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+                      Discover
+                      <br />
+                      more than
+                      <br />
+                      <span className="text-primary-alt">5000+ Jobs</span>
+                    </h1>
+                  </HeroReveal>
+                  <HeroReveal index={1}>
+                    <p className="text-muted-foreground text-lg mb-8 max-w-lg">
+                      Great platform for the job seeker that passionate about driving and logistics. Find your dream job easier.
+                    </p>
+                  </HeroReveal>
 
-                {/* Search Box */}
-                <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 flex-1">
-                      <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                      <Input
-                        placeholder="Job title or keyword"
-                        className="border-0 focus-visible:ring-0 px-0 flex-1"
-                      />
+                  {/* Search Box */}
+                  <HeroReveal index={2}>
+                    <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div className="flex items-center gap-2 flex-1">
+                          <Search className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                          <Input
+                            placeholder="Job title or keyword"
+                            className="border-0 focus-visible:ring-0 px-0 flex-1"
+                          />
+                        </div>
+                        <div className="hidden sm:block w-px h-8 bg-border flex-shrink-0" />
+                        <div className="flex items-center gap-2 flex-1">
+                          <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                          <Input
+                            placeholder="Location"
+                            className="border-0 focus-visible:ring-0 px-0 flex-1"
+                          />
+                        </div>
+                        <Button size="lg" className="bg-primary-alt hover:bg-primary-alt/90 text-black flex-shrink-0 w-full sm:w-auto">
+                          Search Job
+                        </Button>
+                      </div>
                     </div>
-                    <div className="w-px h-8 bg-border flex-shrink-0" />
-                    <div className="flex items-center gap-2 flex-1">
-                      <MapPin className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                      <Input
-                        placeholder="Florence, Italy"
-                        className="border-0 focus-visible:ring-0 px-0 flex-1"
-                      />
-                    </div>
-                    <Button size="lg" className="bg-primary-alt hover:bg-primary-alt/90 text-black flex-shrink-0">
-                      Search Job
-                    </Button>
+                  </HeroReveal>
+
+                  <HeroReveal index={3}>
+                    <p className="text-sm text-muted-foreground">
+                      Popular: Van Driver, Delivery, Logistics, HGV Driver
+                    </p>
+                  </HeroReveal>
+                </div>
+
+                {/* Right Image */}
+                <HeroReveal index={2} className="hidden lg:block -mt-4">
+                  <div className="relative">
+                    <Image
+                      src="/images/graphic-5.svg"
+                      alt="Transport Hub Illustration"
+                      width={500}
+                      height={500}
+                      className="w-full h-auto"
+                      priority
+                    />
                   </div>
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  Popular: Van Driver, Delivery, Logistics, HGV Driver
-                </p>
-              </div>
-
-              {/* Right Image */}
-              <div className="hidden lg:block -mt-4">
-                <div className="relative">
-                  <Image
-                    src="/images/graphic-5.svg"
-                    alt="Transport Hub Illustration"
-                    width={500}
-                    height={500}
-                    className="w-full h-auto"
-                    priority
-                  />
-                </div>
+                </HeroReveal>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Advertisement Section */}
-        <section className="py-12 border-b bg-muted/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-muted-foreground text-center mb-8">
-              Companies we helped grow
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center justify-items-center">
-              {[
-                { name: "Ad Space 1", width: 120, height: 60 },
-                { name: "Ad Space 2", width: 120, height: 60 },
-                { name: "Ad Space 3", width: 120, height: 60 },
-                { name: "Ad Space 4", width: 120, height: 60 },
-                { name: "Ad Space 5", width: 120, height: 60 },
-              ].map((ad, index) => (
-                <div
-                  key={`ad-${index}`}
-                  className="flex items-center justify-center border-2 border-dashed border-muted-foreground/30 rounded-lg hover:border-primary-alt/50 transition-colors"
-                  style={{ width: `${ad.width}px`, height: `${ad.height}px` }}
-                >
-                  <span className="text-xs text-muted-foreground/50">{ad.name}</span>
-                </div>
-              ))}
+          {/* Advertisement Section */}
+          <AnimatedSection
+            id="partners"
+            className="py-12 border-b bg-muted/30 snap-section md:snap-align-none min-h-[auto]"
+            animation="fade-up"
+            delay={100}
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <p className="text-muted-foreground text-center mb-8">
+                Companies we helped grow
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center justify-items-center">
+                {[
+                  { name: "Ad Space 1", width: 120, height: 60 },
+                  { name: "Ad Space 2", width: 120, height: 60 },
+                  { name: "Ad Space 3", width: 120, height: 60 },
+                  { name: "Ad Space 4", width: 120, height: 60 },
+                  { name: "Ad Space 5", width: 120, height: 60 },
+                ].map((ad, index) => (
+                  <div
+                    key={`ad-${index}`}
+                    className="flex items-center justify-center border-2 border-dashed border-muted-foreground/30 rounded-lg hover:border-primary-alt/50 transition-all duration-300 hover:scale-105"
+                    style={{ width: `${ad.width}px`, height: `${ad.height}px` }}
+                  >
+                    <span className="text-xs text-muted-foreground/50">{ad.name}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-center text-xs text-muted-foreground/50 mt-6">
+                Advertisement space available
+              </p>
             </div>
-            <p className="text-center text-xs text-muted-foreground/50 mt-6">
-              Advertisement space available
-            </p>
-          </div>
-        </section>
+          </AnimatedSection>
 
-        {/* Explore by Category */}
-        <section className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="font-heading text-3xl font-bold">
-                Explore by <span className="text-primary-alt">category</span>
-              </h2>
-              <Link
-                href="/jobs"
-                className="text-primary hover:underline flex items-center gap-1"
-              >
-                View all <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categories.map((category) => (
-                <CategoryCard key={category.title} {...category} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Start Posting Jobs CTA */}
-        <section className="relative bg-primary-alt/40 py-20 overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              {/* Left Content */}
-              <div>
-                <h2 className="font-heading text-5xl md:text-6xl font-bold mb-6 leading-tight">
-                  Start posting jobs today
+          {/* Explore by Category */}
+          <AnimatedSection
+            id="categories"
+            className="py-16 bg-white snap-section md:snap-align-none min-h-[auto]"
+            animation="fade-up"
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="font-heading text-3xl font-bold">
+                  Explore by <span className="text-primary-alt">category</span>
                 </h2>
-                <p className="text-foreground/70 text-xl mb-8">
-                  Start posting jobs for only $10.
-                </p>
-                <Link href="/signup">
-                  <Button size="lg" className="bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold px-8 py-6 text-lg">
-                    Sign Up For Free
-                  </Button>
+                <Link
+                  href="/jobs"
+                  className="text-primary hover:underline flex items-center gap-1 transition-colors duration-200"
+                >
+                  View all <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {categories.map((category, index) => (
+                  <div
+                    key={category.title}
+                    className="transition-all duration-500 ease-out"
+                    style={{
+                      transitionDelay: `${index * 100}ms`,
+                    }}
+                  >
+                    <CategoryCard {...category} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </AnimatedSection>
 
-              {/* Right Dashboard Preview */}
-              <div className="hidden lg:block relative">
-                <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-[600px]">
-                  <div className="bg-white rounded-2xl shadow-2xl p-6 transform rotate-2">
-                    <div className="flex items-center gap-2 mb-6">
-                      <div className="w-8 h-8 bg-blue-600 rounded-full" />
-                      <span className="font-semibold">BaselineDrivers</span>
-                    </div>
-                    <div className="bg-accent/50 rounded-lg p-6 mb-4">
-                      <p className="text-sm text-muted-foreground mb-2">Good morning, Maria</p>
-                      <p className="text-xs text-muted-foreground">Here's what's happening with your job listings from July 19 - July 25</p>
-                      <div className="mt-4">
-                        <p className="text-sm font-semibold mb-1">Company Visitors</p>
-                        <p className="text-4xl font-bold">21,457</p>
-                        <p className="text-xs text-muted-foreground">Visitors from July 19 - July 25</p>
+          {/* Start Posting Jobs CTA */}
+          <AnimatedSection
+            id="cta"
+            className="relative bg-primary-alt/40 py-20 overflow-hidden snap-section md:snap-align-none min-h-[auto]"
+            animation="scale-up"
+          >
+            {/* Parallax Background Elements */}
+            <ParallaxBackground
+              className="absolute inset-0 -z-10 pointer-events-none"
+              speed={0.15}
+              direction="up"
+            >
+              <div className="absolute top-20 left-10 w-32 h-32 bg-primary-alt/20 rounded-full blur-3xl" />
+              <div className="absolute bottom-20 right-20 w-48 h-48 bg-primary/10 rounded-full blur-3xl" />
+              <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-white/30 rounded-full blur-2xl" />
+            </ParallaxBackground>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
+                {/* Left Content */}
+                <div>
+                  <h2 className="font-heading text-5xl md:text-6xl font-bold mb-6 leading-tight">
+                    Start posting jobs today
+                  </h2>
+                  <p className="text-foreground/70 text-xl mb-8">
+                    Start posting jobs for only $10.
+                  </p>
+                  <Link href="/signup">
+                    <Button size="lg" className="bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold px-8 py-6 text-lg transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                      Sign Up For Free
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Right Dashboard Preview */}
+                <div className="hidden lg:block relative">
+                  <div className="absolute -right-20 top-1/2 -translate-y-1/2 w-[600px]">
+                    <div className="bg-white rounded-2xl shadow-2xl p-6 transform rotate-2 transition-transform duration-500 hover:rotate-0 hover:scale-105">
+                      <div className="flex items-center gap-2 mb-6">
+                        <div className="w-8 h-8 bg-blue-600 rounded-full" />
+                        <span className="font-semibold">BaselineDrivers</span>
                       </div>
-                      <div className="mt-4 h-32 bg-white/50 rounded-lg flex items-end gap-2 p-4">
-                        {[30, 50, 40, 35, 45, 95, 60].map((height, i) => (
-                          <div
-                            key={i}
-                            className={`flex-1 rounded-t ${i === 5 ? 'bg-blue-600' : 'bg-gray-300'}`}
-                            style={{ height: `${height}%` }}
-                          />
-                        ))}
+                      <div className="bg-accent/50 rounded-lg p-6 mb-4">
+                        <p className="text-sm text-muted-foreground mb-2">Good morning, Maria</p>
+                        <p className="text-xs text-muted-foreground">Here's what's happening with your job listings from July 19 - July 25</p>
+                        <div className="mt-4">
+                          <p className="text-sm font-semibold mb-1">Company Visitors</p>
+                          <p className="text-4xl font-bold">21,457</p>
+                          <p className="text-xs text-muted-foreground">Visitors from July 19 - July 25</p>
+                        </div>
+                        <div className="mt-4 h-32 bg-white/50 rounded-lg flex items-end gap-2 p-4">
+                          {[30, 50, 40, 35, 45, 95, 60].map((height, i) => (
+                            <div
+                              key={i}
+                              className={`flex-1 rounded-t transition-all duration-500 ${i === 5 ? 'bg-blue-600' : 'bg-gray-300'}`}
+                              style={{ height: `${height}%` }}
+                            />
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </AnimatedSection>
 
-        {/* Featured Jobs */}
-        <section className="py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="font-heading text-3xl font-bold">
-                Featured <span className="text-primary">jobs</span>
-              </h2>
-              <Link
-                href="/jobs"
-                className="text-primary hover:underline flex items-center gap-1"
-              >
-                View all <ArrowRight className="h-4 w-4" />
-              </Link>
+          {/* Featured Jobs */}
+          <AnimatedSection
+            id="featured"
+            className="py-16 bg-white snap-section md:snap-align-none min-h-[auto]"
+            animation="fade-up"
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="font-heading text-3xl font-bold">
+                  Featured <span className="text-primary">jobs</span>
+                </h2>
+                <Link
+                  href="/jobs"
+                  className="text-primary hover:underline flex items-center gap-1 transition-colors duration-200"
+                >
+                  View all <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-6">
+                {featuredJobs.map((job, index) => (
+                  <div
+                    key={job.id}
+                    className="transition-all duration-500 ease-out"
+                    style={{
+                      transitionDelay: `${index * 100}ms`,
+                    }}
+                  >
+                    <JobCard {...job} />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="grid sm:grid-cols-2 gap-6">
-              {featuredJobs.map((job) => (
-                <JobCard key={job.id} {...job} />
-              ))}
-            </div>
-          </div>
-        </section>
+          </AnimatedSection>
 
-        {/* Latest Jobs */}
-        <section className="py-16 bg-muted/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="font-heading text-3xl font-bold">
-                Latest <span className="text-primary-alt">jobs open</span>
-              </h2>
-              <Link
-                href="/jobs"
-                className="text-primary hover:underline flex items-center gap-1"
-              >
-                View all <ArrowRight className="h-4 w-4" />
-              </Link>
+          {/* Latest Jobs */}
+          <AnimatedSection
+            id="latest"
+            className="py-16 bg-muted/30 snap-section md:snap-align-none min-h-[auto]"
+            animation="fade-up"
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="font-heading text-3xl font-bold">
+                  Latest <span className="text-primary-alt">jobs open</span>
+                </h2>
+                <Link
+                  href="/jobs"
+                  className="text-primary hover:underline flex items-center gap-1 transition-colors duration-200"
+                >
+                  View all <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-6">
+                {latestJobs.map((job, index) => (
+                  <div
+                    key={job.id}
+                    className="transition-all duration-500 ease-out"
+                    style={{
+                      transitionDelay: `${index * 100}ms`,
+                    }}
+                  >
+                    <JobCard {...job} />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="grid sm:grid-cols-2 gap-6">
-              {latestJobs.map((job) => (
-                <JobCard key={job.id} {...job} />
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
+          </AnimatedSection>
+        </main>
+      </HomePageClient>
       <Footer />
     </>
   );

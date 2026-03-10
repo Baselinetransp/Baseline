@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { Epilogue, Inter } from "next/font/google";
+import { Epilogue, Inter, Montserrat } from "next/font/google";
 
 import "../index.css";
 import Providers from "@/components/providers";
@@ -17,6 +17,13 @@ const inter = Inter({
   display: "swap",
 });
 
+const montserrat = Montserrat({
+  variable: "--font-logo",
+  subsets: ["latin"],
+  weight: ["600", "800"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "BaselineDrivers - Connect Drivers & Recruiters",
   description: "UK & Nigeria's leading transport recruitment platform connecting professional drivers with top employers.",
@@ -29,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${epilogue.variable} ${inter.variable} antialiased`}>
+      <body className={`${epilogue.variable} ${inter.variable} ${montserrat.variable} antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>
