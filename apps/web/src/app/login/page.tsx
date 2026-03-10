@@ -219,7 +219,7 @@ export default function LoginPage() {
                 </Label>
               </div>
               <Link
-                href="/forgot-password"
+                href={"/forgot-password" as never}
                 className="text-sm text-primary hover:underline font-medium"
               >
                 Forgot Password?

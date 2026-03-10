@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -33,6 +33,135 @@ const LICENSE_CLASSES = [
   { value: "D1", label: "Class D1 - Minibus" },
 ];
 
+const JOB_CATEGORIES = [
+  {
+    value: "CAR_BASED",
+    label: "Car-Based Jobs",
+    icon: "🚗",
+    description: "Cars or small passenger vehicles",
+    roles: [
+      "Taxi Driver",
+      "Ride-share Driver",
+      "Chauffeur",
+      "Driving Instructor",
+      "Private Hire Driver",
+      "Medical Transport Driver",
+    ],
+  },
+  {
+    value: "VAN_BASED",
+    label: "Van-Based Jobs",
+    icon: "🚐",
+    description: "Light commercial vans",
+    roles: [
+      "Parcel Delivery Driver",
+      "Courier Driver",
+      "Catering Delivery Driver",
+      "Utility Service Driver",
+      "Mobile Technician / Service Driver",
+      "Delivery Driver",
+    ],
+  },
+  {
+    value: "TRUCK_LORRY",
+    label: "Truck / Lorry Jobs",
+    icon: "🚛",
+    description: "Heavy goods vehicles (HGVs)",
+    roles: [
+      "Long-Haul Truck Driver",
+      "Local Delivery Truck Driver",
+      "Fuel Tanker Driver",
+      "Refrigerated Truck Driver",
+      "Construction Material Truck Driver",
+      "Garbage / Waste Collection Truck Driver",
+      "Dump Truck Driver",
+      "Concrete Mixer Truck Driver",
+    ],
+  },
+  {
+    value: "BUS_PASSENGER",
+    label: "Bus & Passenger Transport",
+    icon: "🚌",
+    description: "Buses and coaches",
+    roles: [
+      "City Bus Driver",
+      "School Bus Driver",
+      "Coach / Tour Bus Driver",
+      "Airport Shuttle Driver",
+      "Minibus Driver",
+    ],
+  },
+  {
+    value: "MOTORCYCLE_BASED",
+    label: "Motorcycle-Based Jobs",
+    icon: "🏍️",
+    description: "Motorcycles or scooters",
+    roles: [
+      "Motorcycle Courier",
+      "Food Delivery Rider",
+      "Express Document Courier",
+    ],
+  },
+  {
+    value: "BICYCLE_BASED",
+    label: "Bicycle-Based Jobs",
+    icon: "🚲",
+    description: "Bicycles",
+    roles: [
+      "Bike Courier",
+      "Food Delivery Cyclist",
+      "Postal Bicycle Delivery Worker",
+    ],
+  },
+  {
+    value: "CONSTRUCTION_INDUSTRIAL",
+    label: "Construction & Industrial Vehicle Jobs",
+    icon: "🚜",
+    description: "Construction and industrial equipment",
+    roles: [
+      "Forklift Operator",
+      "Construction Equipment Operator",
+      "Excavator Operator",
+      "Bulldozer Operator",
+      "Road Roller Operator",
+      "Backhoe Loader Operator",
+      "Mobile Crane Operator",
+      "Telehandler Operator",
+    ],
+  },
+  {
+    value: "VEHICLE_MAINTENANCE",
+    label: "Vehicle Maintenance Jobs",
+    icon: "🔧",
+    description: "Repairing and maintaining vehicles",
+    roles: [
+      "Car Mechanic / Auto Mechanic",
+      "Truck / HGV Mechanic",
+      "Bus Mechanic",
+      "Motorcycle Mechanic",
+      "Diesel Mechanic",
+      "Fleet Maintenance Technician",
+      "Roadside Assistance Technician",
+    ],
+  },
+  {
+    value: "TRANSPORT_MANAGEMENT",
+    label: "Transport Management & Logistics",
+    icon: "📋",
+    description: "Planning, coordinating, and managing transport",
+    roles: [
+      "Transport Manager",
+      "Fleet Manager",
+      "Logistics Manager",
+      "Transport Planner",
+      "Dispatch Coordinator",
+      "Route Planner",
+      "Operations Manager (Transport)",
+      "Fleet Maintenance Manager",
+    ],
+  },
+];
+
 export default function PostNewJobPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +172,8 @@ export default function PostNewJobPage() {
     description: "",
     requirements: "",
     benefits: "",
+    category: "CAR_BASED",
+    jobRole: "",
     jobType: "FULL_TIME",
     experienceLevel: "ENTRY",
     city: "",
@@ -56,6 +187,12 @@ export default function PostNewJobPage() {
     startDate: "",
   });
 
+  // Get available roles based on selected category
+  const availableRoles = useMemo(() => {
+    const category = JOB_CATEGORIES.find((cat) => cat.value === formData.category);
+    return category?.roles || [];
+  }, [formData.category]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -66,6 +203,16 @@ export default function PostNewJobPage() {
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
+  };
+
+  // Handle category change - reset job role when category changes
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCategory = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      category: newCategory,
+      jobRole: "", // Reset job role when category changes
+    }));
   };
 
   const handleLicenseChange = (license: string) => {
@@ -157,6 +304,46 @@ export default function PostNewJobPage() {
                 rows={6}
                 required
               />
+            </div>
+
+            {/* Job Category Dropdown */}
+            <div>
+              <Label htmlFor="category">Job Category *</Label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleCategoryChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                {JOB_CATEGORIES.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.icon} {cat.label} – {cat.description}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Job Role Dropdown - dynamic based on category */}
+            <div>
+              <Label htmlFor="jobRole">Job Role *</Label>
+              <select
+                id="jobRole"
+                name="jobRole"
+                value={formData.jobRole}
+                onChange={handleChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="">Select a job role...</option>
+                {availableRoles.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Select a specific role within the chosen category
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
