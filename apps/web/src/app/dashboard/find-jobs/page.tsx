@@ -1,94 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { Search, MapPin, ChevronDown, SlidersHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, MapPin, ChevronDown, SlidersHorizontal, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { trpc } from "@/utils/trpc";
 
-const jobs = [
-  {
-    id: 1,
-    title: "Social Media Assistant",
-    company: "Nomad",
-    logo: "N",
-    location: "Paris, France",
-    type: "Full-Time",
-    tags: ["Marketing", "Design"],
-    applied: 5,
-    capacity: 10,
-  },
-  {
-    id: 2,
-    title: "Brand Designer",
-    company: "Dropbox",
-    logo: "D",
-    location: "San Francisco, USA",
-    type: "Full-Time",
-    tags: ["Marketing", "Design"],
-    applied: 2,
-    capacity: 10,
-  },
-  {
-    id: 3,
-    title: "Interactive Developer",
-    company: "Terraform",
-    logo: "T",
-    location: "Hamburg, Germany",
-    type: "Full-Time",
-    tags: ["Marketing", "Design"],
-    applied: 8,
-    capacity: 12,
-  },
-  {
-    id: 4,
-    title: "Email Marketing",
-    company: "Revolut",
-    logo: "R",
-    location: "Madrid, Spain",
-    type: "Full-Time",
-    tags: ["Marketing", "Design"],
-    applied: 0,
-    capacity: 10,
-  },
-  {
-    id: 5,
-    title: "Lead Engineer",
-    company: "Canva",
-    logo: "C",
-    location: "Ankara, Turkey",
-    type: "Full-Time",
-    tags: ["Marketing", "Design"],
-    applied: 5,
-    capacity: 10,
-  },
-  {
-    id: 6,
-    title: "Product Designer",
-    company: "ClassPass",
-    logo: "C",
-    location: "Berlin, Germany",
-    type: "Full-Time",
-    tags: ["Marketing", "Design"],
-    applied: 5,
-    capacity: 10,
-  },
-  {
-    id: 7,
-    title: "Customer Manager",
-    company: "Pitch",
-    logo: "P",
-    location: "Berlin, Germany",
-    type: "Full-Time",
-    tags: ["Marketing", "Design"],
-    applied: 5,
-    capacity: 10,
-  },
-];
+const JOB_TYPE_LABELS: Record<string, string> = {
+  FULL_TIME: "Full-Time",
+  PART_TIME: "Part-Time",
+  CONTRACT: "Contract",
+  TEMPORARY: "Temporary",
+  SEASONAL: "Seasonal",
+};
 
 export default function FindJobsPage() {
   const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [locationQuery, setLocationQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [jobType, setJobType] = useState<string | undefined>(undefined);
+
+  const { data: jobsData, isLoading } = useQuery(
+    trpc.job.search.queryOptions({
+      query: searchQuery || undefined,
+      location: locationQuery || undefined,
+      type: jobType as "FULL_TIME" | "PART_TIME" | "CONTRACT" | "FREELANCE" | undefined,
+      page: currentPage,
+      limit: 10,
+    })
+  );
+
+  const jobs = jobsData?.jobs ?? [];
+  const pagination = jobsData?.pagination;
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -97,26 +45,36 @@ export default function FindJobsPage() {
         {/* Search Input */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Job title or keyword" className="pl-9 bg-white" />
+          <Input
+            placeholder="Job title or keyword"
+            className="pl-9 bg-white"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
         {/* Location */}
         <div className="relative">
           <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <div className="flex items-center justify-between pl-9 pr-3 py-2.5 border rounded-md bg-white">
-            <span className="text-sm">Florence, Italy</span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </div>
+          <Input
+            placeholder="City or state"
+            className="pl-9 bg-white"
+            value={locationQuery}
+            onChange={(e) => setLocationQuery(e.target.value)}
+          />
         </div>
 
         {/* Search Button */}
-        <Button className="w-full bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold">
-          Search my job
+        <Button
+          className="w-full bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold"
+          onClick={() => setCurrentPage(1)}
+        >
+          Search Jobs
         </Button>
 
         {/* Popular Tags */}
         <p className="text-sm text-muted-foreground">
-          Popular: UI Designer, UX Researcher, Android, Admin
+          Popular: HGV Driver, Delivery Driver, Bus Driver
         </p>
 
         {/* More Filters Button */}
@@ -142,7 +100,12 @@ export default function FindJobsPage() {
           <div className="bg-white rounded-lg border p-4 hidden md:block">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Job title or keyword" className="pl-9" />
+              <Input
+                placeholder="Job title or keyword"
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
           </div>
 
@@ -150,7 +113,12 @@ export default function FindJobsPage() {
           <div className="bg-white rounded-lg border p-4 hidden md:block">
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Florence, Italy" className="pl-9" />
+              <Input
+                placeholder="City or state"
+                className="pl-9"
+                value={locationQuery}
+                onChange={(e) => setLocationQuery(e.target.value)}
+              />
             </div>
           </div>
 
@@ -260,7 +228,9 @@ export default function FindJobsPage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="font-semibold text-lg">All Jobs</h2>
-              <p className="text-sm text-muted-foreground">Showing 73 results</p>
+              <p className="text-sm text-muted-foreground">
+                {isLoading ? "Loading..." : `Showing ${pagination?.total ?? 0} results`}
+              </p>
             </div>
             <div className="hidden md:flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Sort by:</span>
@@ -279,80 +249,126 @@ export default function FindJobsPage() {
 
           {/* Job Cards */}
           <div className="space-y-4">
-            {jobs.map((job) => (
-              <div key={job.id} className="bg-white rounded-lg border p-4 md:p-6">
-                <div className="flex gap-3 md:gap-4">
-                  <div
-                    className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      job.id % 3 === 0
-                        ? "bg-gradient-to-br from-green-400 to-cyan-500"
-                        : job.id % 2 === 0
-                        ? "bg-gradient-to-br from-blue-400 to-purple-500"
-                        : "bg-gradient-to-br from-green-400 to-emerald-500"
-                    }`}
-                  >
-                    <span className="text-white font-semibold text-lg">{job.logo}</span>
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base md:text-lg mb-1">{job.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {job.company} • {job.location}
-                    </p>
-
-                    {/* Tags */}
-                    <div className="flex items-center gap-2 flex-wrap mb-3">
-                      <span className="px-3 py-1 border border-primary-alt text-primary-alt rounded-full text-xs font-medium">
-                        {job.type}
-                      </span>
-                      {job.tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 border border-primary-alt text-primary-alt rounded-full text-xs font-medium"
-                        >
-                          {tag}
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary-alt" />
+              </div>
+            ) : jobs.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No jobs found. Try adjusting your search.</p>
+              </div>
+            ) : (
+              jobs.map((job) => (
+                <div key={job.id} className="bg-white rounded-lg border p-4 md:p-6">
+                  <div className="flex gap-3 md:gap-4">
+                    {job.company?.logoUrl ? (
+                      <img
+                        src={job.company.logoUrl}
+                        alt={job.company.name}
+                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-green-400 to-emerald-500">
+                        <span className="text-white font-semibold text-lg">
+                          {job.company?.name?.charAt(0) || "J"}
                         </span>
-                      ))}
+                      </div>
+                    )}
+
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base md:text-lg mb-1">{job.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {job.company?.name || "Company"} • {job.city || "Remote"}{job.state ? `, ${job.state}` : ""}
+                      </p>
+
+                      {/* Tags */}
+                      <div className="flex items-center gap-2 flex-wrap mb-3">
+                        <span className="px-3 py-1 border border-primary-alt text-primary-alt rounded-full text-xs font-medium">
+                          {JOB_TYPE_LABELS[job.jobType] || job.jobType}
+                        </span>
+                        {job.isRemote && (
+                          <span className="px-3 py-1 border border-primary-alt text-primary-alt rounded-full text-xs font-medium">
+                            Remote
+                          </span>
+                        )}
+                        {job.experienceLevel && (
+                          <span className="px-3 py-1 border border-gray-300 text-gray-600 rounded-full text-xs font-medium">
+                            {job.experienceLevel}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Salary */}
+                      {(job.salaryMin || job.salaryMax) && (
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {job.salaryMin && job.salaryMax
+                            ? `£${job.salaryMin.toLocaleString()} - £${job.salaryMax.toLocaleString()}`
+                            : job.salaryMin
+                            ? `From £${job.salaryMin.toLocaleString()}`
+                            : `Up to £${job.salaryMax?.toLocaleString()}`}
+                          {job.salaryNegotiable && " (Negotiable)"}
+                        </p>
+                      )}
+
+                      {/* Apply Button */}
+                      <Link href={`/jobs/${job.slug}`}>
+                        <Button className="w-full bg-primary-alt/10 hover:bg-primary-alt/20 text-primary-alt font-medium border-0">
+                          View Details
+                        </Button>
+                      </Link>
                     </div>
-
-                    {/* Apply Button */}
-                    <Button className="w-full bg-primary-alt/10 hover:bg-primary-alt/20 text-primary-alt font-medium border-0">
-                      Apply
-                    </Button>
-
-                    {/* Capacity */}
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {job.applied} applied of {job.capacity} capacity
-                    </p>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* Pagination */}
-          <div className="flex justify-center items-center gap-1 mt-6 py-4">
-            <button className="w-8 h-8 rounded flex items-center justify-center hover:bg-muted">
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            {[1, 2, 3, 4].map((page) => (
+          {pagination && pagination.totalPages > 1 && (
+            <div className="flex justify-center items-center gap-1 mt-6 py-4">
               <button
-                key={page}
-                className={`w-8 h-8 rounded flex items-center justify-center ${
-                  page === 1 ? "bg-primary-alt text-black font-medium" : "hover:bg-muted"
-                }`}
+                className="w-8 h-8 rounded flex items-center justify-center hover:bg-muted disabled:opacity-50"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
               >
-                {page}
+                <ChevronLeft className="h-4 w-4" />
               </button>
-            ))}
-            <span className="text-muted-foreground px-1">...</span>
-            <button className="w-8 h-8 rounded flex items-center justify-center hover:bg-muted">
-              33
-            </button>
-            <button className="w-8 h-8 rounded flex items-center justify-center hover:bg-muted">
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                const page = i + 1;
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 rounded flex items-center justify-center ${
+                      page === currentPage ? "bg-primary-alt text-black font-medium" : "hover:bg-muted"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+              {pagination.totalPages > 5 && (
+                <>
+                  <span className="text-muted-foreground px-1">...</span>
+                  <button
+                    onClick={() => setCurrentPage(pagination.totalPages)}
+                    className={`w-8 h-8 rounded flex items-center justify-center ${
+                      currentPage === pagination.totalPages ? "bg-primary-alt text-black font-medium" : "hover:bg-muted"
+                    }`}
+                  >
+                    {pagination.totalPages}
+                  </button>
+                </>
+              )}
+              <button
+                className="w-8 h-8 rounded flex items-center justify-center hover:bg-muted disabled:opacity-50"
+                onClick={() => setCurrentPage((p) => Math.min(pagination.totalPages, p + 1))}
+                disabled={currentPage === pagination.totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

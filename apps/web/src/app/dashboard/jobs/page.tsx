@@ -15,68 +15,15 @@ import {
   MapPin,
   Calendar,
   Briefcase,
+  Loader2,
 } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { trpc, queryClient } from "@/utils/trpc";
 
 type JobStatus = "DRAFT" | "PUBLISHED" | "PAUSED" | "CLOSED" | "FILLED";
-
-interface Job {
-  id: string;
-  title: string;
-  city: string;
-  state: string;
-  country: string;
-  jobType: string;
-  status: JobStatus;
-  applicationsCount: number;
-  viewCount: number;
-  createdAt: string;
-  expiresAt: string | null;
-}
-
-// Mock data - will be replaced with API call
-const mockJobs: Job[] = [
-  {
-    id: "1",
-    title: "HGV Class 1 Driver",
-    city: "London",
-    state: "Greater London",
-    country: "UK",
-    jobType: "FULL_TIME",
-    status: "PUBLISHED",
-    applicationsCount: 24,
-    viewCount: 156,
-    createdAt: "2026-02-15",
-    expiresAt: "2026-03-15",
-  },
-  {
-    id: "2",
-    title: "Van Driver - Delivery",
-    city: "Manchester",
-    state: "Greater Manchester",
-    country: "UK",
-    jobType: "PART_TIME",
-    status: "PUBLISHED",
-    applicationsCount: 12,
-    viewCount: 89,
-    createdAt: "2026-02-20",
-    expiresAt: "2026-03-20",
-  },
-  {
-    id: "3",
-    title: "Long Haul Truck Driver",
-    city: "Birmingham",
-    state: "West Midlands",
-    country: "UK",
-    jobType: "CONTRACT",
-    status: "DRAFT",
-    applicationsCount: 0,
-    viewCount: 0,
-    createdAt: "2026-03-01",
-    expiresAt: null,
-  },
-];
 
 const statusColors: Record<JobStatus, string> = {
   DRAFT: "bg-gray-100 text-gray-700",
@@ -95,28 +42,77 @@ const jobTypeLabels: Record<string, string> = {
 };
 
 export default function MyJobsPage() {
-  const [jobs] = useState<Job[]>(mockJobs);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
+  // Fetch recruiter's jobs
+  const { data: jobsData, isLoading, error } = useQuery(
+    trpc.job.myJobs.queryOptions(
+      statusFilter !== "ALL" ? { status: statusFilter as JobStatus } : undefined
+    )
+  );
+
+  const jobs = jobsData ?? [];
+
+  // Update job mutation
+  const updateJobMutation = useMutation(
+    trpc.job.update.mutationOptions({
+      onSuccess: () => {
+        toast.success("Job updated successfully");
+        queryClient.invalidateQueries({ queryKey: [["job", "myJobs"]] });
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to update job");
+      },
+    })
+  );
+
+  // Delete job mutation
+  const deleteJobMutation = useMutation(
+    trpc.job.delete.mutationOptions({
+      onSuccess: () => {
+        toast.success("Job deleted successfully");
+        queryClient.invalidateQueries({ queryKey: [["job", "myJobs"]] });
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to delete job");
+      },
+    })
+  );
+
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "ALL" || job.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   const handleStatusChange = (jobId: string, newStatus: JobStatus) => {
-    // TODO: Implement API call
-    console.log(`Change job ${jobId} to ${newStatus}`);
+    updateJobMutation.mutate({ id: jobId, data: { status: newStatus } });
     setOpenDropdown(null);
   };
 
   const handleDelete = (jobId: string) => {
-    // TODO: Implement API call with confirmation
-    console.log(`Delete job ${jobId}`);
+    if (confirm("Are you sure you want to delete this job? This action cannot be undone.")) {
+      deleteJobMutation.mutate({ id: jobId });
+    }
     setOpenDropdown(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-alt" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        Failed to load jobs. Please try again.
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -149,13 +145,13 @@ export default function MyJobsPage() {
         <div className="bg-white rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Total Applications</p>
           <p className="text-2xl font-bold">
-            {jobs.reduce((sum, j) => sum + j.applicationsCount, 0)}
+            {jobs.reduce((sum, j) => sum + (j._count?.applications ?? 0), 0)}
           </p>
         </div>
         <div className="bg-white rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Total Views</p>
           <p className="text-2xl font-bold">
-            {jobs.reduce((sum, j) => sum + j.viewCount, 0)}
+            {jobs.reduce((sum, j) => sum + (j.viewCount ?? 0), 0)}
           </p>
         </div>
       </div>
@@ -238,13 +234,13 @@ export default function MyJobsPage() {
                     <div className="flex items-center gap-2">
                       <Eye className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">
-                        <strong>{job.viewCount}</strong> views
+                        <strong>{job.viewCount ?? 0}</strong> views
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">
-                        <strong>{job.applicationsCount}</strong> applications
+                        <strong>{job._count?.applications ?? 0}</strong> applications
                       </span>
                     </div>
                   </div>

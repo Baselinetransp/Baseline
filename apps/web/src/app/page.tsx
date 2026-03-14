@@ -172,11 +172,11 @@ export default function HomePage() {
                 <HeroReveal index={2} className="hidden lg:block -mt-4">
                   <div className="relative">
                     <Image
-                      src="/images/graphic-5.svg"
-                      alt="Transport Hub Illustration"
-                      width={500}
-                      height={500}
-                      className="w-full h-auto"
+                      src="/images/hero-banner.png"
+                      alt="Baseline Drivers - Professional Driving Jobs"
+                      width={2048}
+                      height={697}
+                      className="w-full h-auto rounded-lg"
                       priority
                     />
                   </div>

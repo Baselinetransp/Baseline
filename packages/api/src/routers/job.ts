@@ -13,6 +13,7 @@ const jobCreateSchema = z.object({
   requirements: z.string().optional(),
   benefits: z.string().optional(),
   jobType: z.nativeEnum(JobType).default(JobType.FULL_TIME),
+  address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
   country: z.string().default("US"),
@@ -125,12 +126,15 @@ export const jobsRouter = router({
    * Recruiter: Create a new job post
    */
   create: recruiterProcedure.input(jobCreateSchema).mutation(async ({ ctx, input }) => {
-    const recruiterProfile = await prisma.recruiterProfile.findUnique({
+    // Auto-create recruiter profile if it doesn't exist
+    let recruiterProfile = await prisma.recruiterProfile.findUnique({
       where: { userId: ctx.user.id },
     });
 
     if (!recruiterProfile) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Profile missing." });
+      recruiterProfile = await prisma.recruiterProfile.create({
+        data: { userId: ctx.user.id },
+      });
     }
 
     const baseSlug = slugify(input.title, { lower: true, strict: true });
@@ -206,7 +210,8 @@ export const jobsRouter = router({
         where: { userId: ctx.user.id },
       });
 
-      if (!recruiterProfile) throw new TRPCError({ code: "NOT_FOUND" });
+      // Return empty array if no profile exists yet (new recruiter)
+      if (!recruiterProfile) return [];
 
       return prisma.job.findMany({
         where: {

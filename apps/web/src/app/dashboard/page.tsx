@@ -7,14 +7,13 @@ import Dashboard from "./dashboard";
 import RecruiterDashboard from "./recruiter-dashboard";
 
 export default async function DashboardPage() {
-  const session = await authClient.getSession({
+  const { data: session, error } = await authClient.getSession({
     fetchOptions: {
       headers: await headers(),
-      throw: true,
     },
   });
 
-  if (!session?.user) {
+  if (error || !session?.user) {
     redirect("/login");
   }
 

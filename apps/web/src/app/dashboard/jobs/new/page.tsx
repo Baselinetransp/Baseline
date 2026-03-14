@@ -4,10 +4,13 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { trpc, queryClient } from "@/utils/trpc";
 
 const JOB_TYPES = [
   { value: "FULL_TIME", label: "Full Time" },
@@ -164,8 +167,19 @@ const JOB_CATEGORIES = [
 
 export default function PostNewJobPage() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const createJobMutation = useMutation(
+    trpc.job.create.mutationOptions({
+      onSuccess: () => {
+        toast.success("Job created successfully!");
+        queryClient.invalidateQueries({ queryKey: [["job", "myJobs"]] });
+        router.push("/dashboard/jobs");
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to create job. Please try again.");
+      },
+    })
+  );
 
   const [formData, setFormData] = useState({
     title: "",
@@ -176,6 +190,7 @@ export default function PostNewJobPage() {
     jobRole: "",
     jobType: "FULL_TIME",
     experienceLevel: "ENTRY",
+    address: "",
     city: "",
     state: "",
     country: "UK",
@@ -192,6 +207,11 @@ export default function PostNewJobPage() {
     const category = JOB_CATEGORIES.find((cat) => cat.value === formData.category);
     return category?.roles || [];
   }, [formData.category]);
+
+  // Get currency symbol based on selected country
+  const currencySymbol = useMemo(() => {
+    return formData.country === "NG" ? "₦" : "£";
+  }, [formData.country]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -224,33 +244,37 @@ export default function PostNewJobPage() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent, status: "DRAFT" | "PUBLISHED") => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError("");
 
-    try {
-      const response = await fetch("/api/trpc/jobs.create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          status,
-          salaryMin: formData.salaryMin ? parseInt(formData.salaryMin) * 100 : null,
-          salaryMax: formData.salaryMax ? parseInt(formData.salaryMax) * 100 : null,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create job");
-      }
-
-      router.push("/dashboard/jobs");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to create job. Please try again.");
-    } finally {
-      setIsLoading(false);
+    if (formData.licenseRequired.length === 0) {
+      toast.error("Please select at least one license class");
+      return;
     }
+
+    if (formData.description.length < 50) {
+      toast.error("Description must be at least 50 characters");
+      return;
+    }
+
+    createJobMutation.mutate({
+      title: formData.title,
+      description: formData.description,
+      requirements: formData.requirements || undefined,
+      benefits: formData.benefits || undefined,
+      jobType: formData.jobType as "FULL_TIME" | "PART_TIME" | "CONTRACT" | "TEMPORARY" | "SEASONAL",
+      experienceLevel: formData.experienceLevel as "ENTRY" | "JUNIOR" | "MID" | "SENIOR" | "EXPERT",
+      address: formData.address || undefined,
+      city: formData.city || undefined,
+      state: formData.state || undefined,
+      country: formData.country,
+      isRemote: formData.isRemote,
+      licenseRequired: formData.licenseRequired,
+      salaryMin: formData.salaryMin ? parseInt(formData.salaryMin) : undefined,
+      salaryMax: formData.salaryMax ? parseInt(formData.salaryMax) : undefined,
+      salaryNegotiable: formData.salaryNegotiable,
+      startDate: formData.startDate ? new Date(formData.startDate).toISOString() : undefined,
+    });
   };
 
   return (
@@ -270,13 +294,7 @@ export default function PostNewJobPage() {
         </p>
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-          {error}
-        </div>
-      )}
-
-      <form className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Basic Information */}
         <div className="bg-white rounded-lg border p-6">
           <h2 className="text-lg font-semibold mb-4">Basic Information</h2>
@@ -444,6 +462,17 @@ export default function PostNewJobPage() {
               </Label>
             </div>
 
+            <div>
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                placeholder="e.g., 123 Main Street"
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="city">City</Label>
@@ -491,7 +520,7 @@ export default function PostNewJobPage() {
                 <Label htmlFor="salaryMin">Minimum Salary (Monthly)</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    £
+                    {currencySymbol}
                   </span>
                   <Input
                     id="salaryMin"
@@ -508,7 +537,7 @@ export default function PostNewJobPage() {
                 <Label htmlFor="salaryMax">Maximum Salary (Monthly)</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    £
+                    {currencySymbol}
                   </span>
                   <Input
                     id="salaryMax"
@@ -575,20 +604,18 @@ export default function PostNewJobPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={(e) => handleSubmit(e, "DRAFT")}
-            disabled={isLoading}
+            onClick={() => router.push("/dashboard/jobs")}
+            disabled={createJobMutation.isPending}
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Save as Draft
+            Cancel
           </Button>
           <Button
-            type="button"
-            onClick={(e) => handleSubmit(e, "PUBLISHED")}
-            disabled={isLoading}
+            type="submit"
+            disabled={createJobMutation.isPending}
             className="bg-primary-alt text-black hover:bg-primary-alt/90"
           >
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Publish Job
+            {createJobMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            Create Job
           </Button>
         </div>
       </form>
