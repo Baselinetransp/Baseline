@@ -158,11 +158,70 @@ export const usersRouter = router({
       orderBy: { createdAt: "desc" },
       include: {
         job: {
-          include: { 
-            company: { select: { name: true, logoUrl: true, city: true, state: true } } 
+          include: {
+            company: { select: { name: true, logoUrl: true, city: true, state: true } }
           },
         },
       },
     });
   }),
+
+  // Delete account
+  deleteAccount: protectedProcedure
+    .input(
+      z.object({
+        reason: z.enum([
+          "not_using",
+          "found_job",
+          "privacy",
+          "too_many_emails",
+          "not_satisfied",
+          "other",
+        ]),
+        details: z.string().max(1000).optional(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id;
+
+      // Use a transaction to ensure all data is deleted atomically
+      await prisma.$transaction(async (tx) => {
+        // First, log the deletion reason for analytics (optional - create table if needed)
+        // For now, we'll just proceed with deletion
+
+        // Delete driver-related data
+        await tx.savedJob.deleteMany({ where: { userId } });
+        await tx.application.deleteMany({ where: { userId } });
+        await tx.driverProfile.deleteMany({ where: { userId } });
+
+        // Delete recruiter-related data
+        const recruiterProfile = await tx.recruiterProfile.findUnique({
+          where: { userId },
+          include: { company: true },
+        });
+
+        if (recruiterProfile) {
+          // Deactivate jobs posted by this recruiter (don't delete, just close them)
+          await tx.job.updateMany({
+            where: { recruiterId: recruiterProfile.id },
+            data: { status: "CLOSED" },
+          });
+
+          await tx.recruiterProfile.delete({ where: { userId } });
+
+          // Note: We don't delete the company as other recruiters might be associated
+        }
+
+        // Delete sessions
+        await tx.session.deleteMany({ where: { userId } });
+
+        // Delete accounts (OAuth connections)
+        await tx.account.deleteMany({ where: { userId } });
+
+        // Finally, delete the user
+        await tx.user.delete({ where: { id: userId } });
+      });
+
+      return { success: true };
+    }),
 });

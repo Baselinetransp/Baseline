@@ -26,6 +26,7 @@ model Job {
   benefits        String?         @db.Text
   jobType         JobType         @default(FULL_TIME)
   status          JobStatus       @default(DRAFT)
+  address         String?
   city            String?
   state           String?
   country         String          @default("US")

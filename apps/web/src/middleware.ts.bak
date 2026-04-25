@@ -1,0 +1,70 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+// Routes that require authentication
+const protectedRoutes = ["/dashboard", "/profile", "/settings", "/applications"];
+
+// Routes only for non-authenticated users
+const authRoutes = ["/login", "/signup", "/forgot-password"];
+
+// Routes that require specific roles
+const recruiterRoutes = ["/dashboard/jobs/create", "/dashboard/jobs/edit"];
+const adminRoutes = ["/admin"];
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Get session token from cookies
+  // better-auth stores session in a cookie named 'better-auth.session_token'
+  const sessionToken = request.cookies.get("better-auth.session_token")?.value;
+  const isAuthenticated = !!sessionToken;
+
+  // Check if trying to access protected routes without auth
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  if (isProtectedRoute && !isAuthenticated) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Redirect authenticated users away from auth pages
+  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+
+  if (isAuthRoute && isAuthenticated) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  // For role-based protection, we need to verify the session server-side
+  // This is a basic check - for full role verification, use the auth service in page components
+  const isRecruiterRoute = recruiterRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+  const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
+
+  // Note: Full role verification should happen in the page/layout components
+  // using the auth service, as middleware doesn't have access to the full session data
+  // This middleware provides the first layer of protection (authentication check)
+
+  if ((isRecruiterRoute || isAdminRoute) && !isAuthenticated) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     * - api routes (handled separately)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|images|api).*)",
+  ],
+};

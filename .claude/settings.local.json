@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m pip:*)",
+      "Bash(findstr:*)",
+      "Bash(where:*)",
+      "Bash(npm search:*)",
+      "Bash(powershell -Command:*)"
+    ]
+  }
+}

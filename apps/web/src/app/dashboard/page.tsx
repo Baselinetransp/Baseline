@@ -4,24 +4,25 @@ import { redirect } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 
 import Dashboard from "./dashboard";
+import RecruiterDashboard from "./recruiter-dashboard";
 
 export default async function DashboardPage() {
-  const session = await authClient.getSession({
+  const { data: session, error } = await authClient.getSession({
     fetchOptions: {
       headers: await headers(),
-      throw: true,
     },
   });
 
-  if (!session?.user) {
+  if (error || !session?.user) {
     redirect("/login");
   }
 
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>Welcome {session.user.name}</p>
-      <Dashboard session={session} />
-    </div>
-  );
+  const userRole = (session.user as { role?: string })?.role || "DRIVER";
+  const isRecruiter = userRole === "RECRUITER" || userRole === "ADMIN";
+
+  if (isRecruiter) {
+    return <RecruiterDashboard session={session} />;
+  }
+
+  return <Dashboard session={session} />;
 }

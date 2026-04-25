@@ -1,24 +1,32 @@
 import type { Metadata } from "next";
 
-import { Geist, Geist_Mono } from "next/font/google";
+import { Epilogue, Inter, Montserrat } from "next/font/google";
 
 import "../index.css";
-import Header from "@/components/header";
 import Providers from "@/components/providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const epilogue = Epilogue({
+  variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-heading",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const montserrat = Montserrat({
+  variable: "--font-logo",
+  subsets: ["latin"],
+  weight: ["600", "800"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "baseline",
-  description: "baseline",
+  title: "BaselineDrivers - Connect Drivers & Recruiters",
+  description: "UK & Nigeria's leading transport recruitment platform connecting professional drivers with top employers.",
 };
 
 export default function RootLayout({
@@ -28,13 +36,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>
-          <div className="grid grid-rows-[auto_1fr] h-svh">
-            <Header />
-            {children}
-          </div>
-        </Providers>
+      <body className={`${epilogue.variable} ${inter.variable} ${montserrat.variable} antialiased`}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
