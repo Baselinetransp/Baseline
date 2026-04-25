@@ -219,7 +219,7 @@ export default function SignUpPage() {
           {/* Notice */}
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
             <p>
-              After you submit your job, one of our agents will review your post and reach out to confirm your account and walk you through the available options. This extra step helps us deliver the highest-quality experience for both our drivers and carriers. Please submit only ONE job until an agent has contacted you.
+              After you sign up, one of our agents will review your sign up and reach out to confirm your account and walk you through the available options. This extra step helps us deliver the highest-quality experience for both our drivers and carriers. Please submit only ONE job until an agent has contacted you.
             </p>
           </div>
 
