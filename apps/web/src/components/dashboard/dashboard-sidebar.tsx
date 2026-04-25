@@ -41,7 +41,6 @@ const recruiterNavItems: NavItem[] = [
   { icon: Briefcase, label: "My Jobs", href: "/dashboard/jobs" },
   { icon: PlusCircle, label: "Post New Job", href: "/dashboard/jobs/new" },
   { icon: Users, label: "Applications", href: "/dashboard/recruiter/applications" },
-  { icon: Building2, label: "Company Profile", href: "/dashboard/company" },
   { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
 ];
 

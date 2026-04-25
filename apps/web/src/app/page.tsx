@@ -19,7 +19,6 @@ export default function HomePage() {
     { icon: Package, title: "Logistics Driver", openPositions: 86, href: "/jobs?category=logistics" },
     { icon: Users, title: "Delivery Driver", openPositions: 245, href: "/jobs?category=delivery" },
     { icon: Building2, title: "Business", openPositions: 436, href: "/jobs?category=business" },
-    { icon: Users, title: "Human Resource", openPositions: 142, href: "/jobs?category=hr" },
     { icon: Wrench, title: "Maintenance", openPositions: 72, href: "/jobs?category=maintenance" },
   ];
 
@@ -30,7 +29,6 @@ export default function HomePage() {
       company: "Stripe",
       location: "Manchester, UK",
       type: "Full-Time",
-      salary: "£32,000 - £38,000",
       tags: ["Class 2", "Night Shifts", "HGV"],
       posted: "2 days ago",
     },
@@ -40,7 +38,6 @@ export default function HomePage() {
       company: "Amazon",
       location: "London, UK",
       type: "Full-Time",
-      salary: "£28,000 - £32,000",
       tags: ["Van Driver", "Day Shifts"],
       posted: "1 day ago",
     },
@@ -50,7 +47,6 @@ export default function HomePage() {
       company: "DHL",
       location: "Birmingham, UK",
       type: "Full-Time",
-      salary: "£25,000 - £30,000",
       tags: ["Planning", "Coordination"],
       posted: "3 days ago",
     },
@@ -60,7 +56,6 @@ export default function HomePage() {
       company: "DPD",
       location: "Leeds, UK",
       type: "Part-Time",
-      salary: "£24,000 - £28,000",
       tags: ["Flexible", "Van Provided"],
       posted: "5 days ago",
     },
@@ -73,7 +68,6 @@ export default function HomePage() {
       company: "Dangote Transport",
       location: "Lagos, Nigeria",
       type: "Full-Time",
-      salary: "₦150,000 - ₦250,000",
       tags: ["HGV License", "Long Distance"],
       posted: "1 hour ago",
     },
@@ -83,7 +77,6 @@ export default function HomePage() {
       company: "Jumia Logistics",
       location: "Abuja, Nigeria",
       type: "Full-Time",
-      salary: "₦80,000 - ₦120,000",
       tags: ["Motorcycle", "Last Mile"],
       posted: "3 hours ago",
     },
@@ -93,7 +86,6 @@ export default function HomePage() {
       company: "Max.ng",
       location: "Port Harcourt, Nigeria",
       type: "Part-Time",
-      salary: "₦100,000 - ₦180,000",
       tags: ["Van License", "Flexible Hours"],
       posted: "5 hours ago",
     },
@@ -103,7 +95,6 @@ export default function HomePage() {
       company: "NNPC Logistics",
       location: "Warri, Nigeria",
       type: "Full-Time",
-      salary: "₦200,000 - ₦300,000",
       tags: ["Tanker License", "Hazmat Certified"],
       posted: "1 day ago",
     },
@@ -213,9 +204,16 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-              <p className="text-center text-xs text-muted-foreground/50 mt-6">
-                Advertisement space available
-              </p>
+              <div className="text-center mt-8">
+                <p className="text-muted-foreground mb-4">
+                  Want to reach thousands of drivers and recruiters?
+                </p>
+                <Link href="/advertise">
+                  <Button className="bg-primary-alt hover:bg-primary-alt/90 text-black font-semibold">
+                    Advertise With Us
+                  </Button>
+                </Link>
+              </div>
             </div>
           </AnimatedSection>
 

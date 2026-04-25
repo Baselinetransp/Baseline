@@ -188,6 +188,7 @@ export default function PostNewJobPage() {
     benefits: "",
     category: "CAR_BASED",
     jobRole: "",
+    customJobRole: "",
     jobType: "FULL_TIME",
     experienceLevel: "ENTRY",
     address: "",
@@ -196,6 +197,7 @@ export default function PostNewJobPage() {
     country: "UK",
     isRemote: false,
     licenseRequired: [] as string[],
+    customLicense: "",
     salaryMin: "",
     salaryMax: "",
     salaryNegotiable: false,
@@ -249,6 +251,16 @@ export default function PostNewJobPage() {
 
     if (formData.licenseRequired.length === 0) {
       toast.error("Please select at least one license class");
+      return;
+    }
+
+    if (formData.licenseRequired.includes("OTHER") && !formData.customLicense.trim()) {
+      toast.error("Please specify the license type");
+      return;
+    }
+
+    if (formData.jobRole === "Others" && !formData.customJobRole.trim()) {
+      toast.error("Please specify the job role");
       return;
     }
 
@@ -358,11 +370,27 @@ export default function PostNewJobPage() {
                     {role}
                   </option>
                 ))}
+                <option value="Others">Others (Specify below)</option>
               </select>
               <p className="text-xs text-muted-foreground mt-1">
                 Select a specific role within the chosen category
               </p>
             </div>
+
+            {/* Custom Job Role Input - shown when "Others" is selected */}
+            {formData.jobRole === "Others" && (
+              <div>
+                <Label htmlFor="customJobRole">Specify Job Role *</Label>
+                <Input
+                  id="customJobRole"
+                  name="customJobRole"
+                  value={formData.customJobRole}
+                  onChange={handleChange}
+                  placeholder="Enter the job role for this position"
+                  required
+                />
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -420,6 +448,9 @@ export default function PostNewJobPage() {
 
             <div>
               <Label className="mb-3 block">Required License Classes *</Label>
+              <p className="text-xs text-muted-foreground mb-3">
+                Specify the license type required for your job
+              </p>
               <div className="flex flex-wrap gap-3">
                 {LICENSE_CLASSES.map((license) => (
                   <label
@@ -439,7 +470,38 @@ export default function PostNewJobPage() {
                     <span className="text-sm font-medium">{license.label}</span>
                   </label>
                 ))}
+                {/* Others option */}
+                <label
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
+                    formData.licenseRequired.includes("OTHER")
+                      ? "bg-primary-alt/10 border-primary-alt text-primary-alt"
+                      : "bg-white hover:bg-muted/50"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.licenseRequired.includes("OTHER")}
+                    onChange={() => handleLicenseChange("OTHER")}
+                    className="sr-only"
+                  />
+                  <span className="text-sm font-medium">Others (Specify below)</span>
+                </label>
               </div>
+
+              {/* Custom License Input - shown when "Others" is selected */}
+              {formData.licenseRequired.includes("OTHER") && (
+                <div className="mt-4">
+                  <Label htmlFor="customLicense">Specify License Type *</Label>
+                  <Input
+                    id="customLicense"
+                    name="customLicense"
+                    value={formData.customLicense}
+                    onChange={handleChange}
+                    placeholder="Enter the license type required (e.g., Forklift License, ADR Certificate)"
+                    required
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

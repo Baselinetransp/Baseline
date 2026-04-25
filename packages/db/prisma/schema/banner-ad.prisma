@@ -1,0 +1,56 @@
+// ─── Banner Ad Submissions ────────────────────────────────────────────────────
+
+enum BannerAdStatus {
+  PENDING   // Submitted, awaiting payment
+  PAID      // Paid, awaiting review
+  APPROVED  // Approved, live
+  REJECTED  // Rejected by admin
+  EXPIRED   // Campaign ended
+}
+
+model BannerAdSubmission {
+  id                 String          @id @default(cuid())
+  userId             String
+  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Company Info
+  companyName        String
+  contactEmail       String
+  contactPhone       String?
+  companyWebsite     String?
+  industry           String?
+
+  // Campaign Details
+  bannerImageUrl     String          @db.Text
+  targetAudience     String?         @db.Text
+  preferredPlacement String?
+  campaignGoals      String?         @db.Text
+  budgetRange        String?
+
+  // Duration & Pricing
+  durationWeeks      Int
+  packageTier        String          // "basic", "standard", "premium"
+  totalAmount        Decimal         @db.Decimal(10, 2)
+  currency           String          // "GBP" or "NGN"
+
+  // Payment
+  paymentProvider    String?         // "stripe" or "paystack"
+  paymentId          String?
+  paidAt             DateTime?
+
+  // Status
+  status             BannerAdStatus  @default(PENDING)
+  termsAcceptedAt    DateTime
+
+  // Campaign Dates
+  startDate          DateTime?
+  endDate            DateTime?
+
+  // Timestamps
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("banner_ad_submissions")
+}

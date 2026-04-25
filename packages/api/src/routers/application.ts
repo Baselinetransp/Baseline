@@ -27,9 +27,22 @@ export const applicationsRouter = router({
       });
 
       if (!driverProfile) {
-        throw new TRPCError({ 
-          code: "NOT_FOUND", 
-          message: "Please complete your driver profile before applying." 
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Please complete your driver profile before applying."
+        });
+      }
+
+      // Check for required profile fields
+      const missingFields: string[] = [];
+      if (!driverProfile.phone) missingFields.push("phone number");
+      if (!driverProfile.country) missingFields.push("country");
+      if (!driverProfile.state) missingFields.push("state/region");
+
+      if (missingFields.length > 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Please complete your profile. Missing: ${missingFields.join(", ")}.`,
         });
       }
 

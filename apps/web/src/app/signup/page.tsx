@@ -8,13 +8,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { authClient } from "@/lib/auth-client";
+import { trpcClient } from "@/utils/trpc";
+import Logo from "@/components/logo";
+import { COUNTRIES, type CountryCode } from "@/lib/location-data";
 
 export default function SignUpPage() {
   const router = useRouter();
   const [userType, setUserType] = useState<"DRIVER" | "RECRUITER">("DRIVER");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [country, setCountry] = useState<CountryCode | "">("");
+  const [recruiterCountry, setRecruiterCountry] = useState<CountryCode | "">("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,9 +37,45 @@ export default function SignUpPage() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const name = formData.get("fullname") as string;
+    const phone = formData.get("phone") as string;
+    const companyName = formData.get("companyName") as string;
+    const recruiterPhone = formData.get("recruiterPhone") as string;
+
+    // Validation for driver-specific fields
+    if (userType === "DRIVER") {
+      if (!phone) {
+        setError("Phone number is required.");
+        setIsLoading(false);
+        return;
+      }
+      if (!country) {
+        setError("Please select your country.");
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // Validation for recruiter-specific fields
+    if (userType === "RECRUITER") {
+      if (!companyName) {
+        setError("Company name is required.");
+        setIsLoading(false);
+        return;
+      }
+      if (!recruiterPhone) {
+        setError("Phone number is required.");
+        setIsLoading(false);
+        return;
+      }
+      if (!recruiterCountry) {
+        setError("Please select your location.");
+        setIsLoading(false);
+        return;
+      }
+    }
 
     try {
-      await authClient.signUp.email({
+      const result = await authClient.signUp.email({
         email,
         password,
         name,
@@ -35,10 +83,55 @@ export default function SignUpPage() {
         callbackURL: "/dashboard",
       });
 
+      console.log("Signup result:", result);
+
+      if (result.error) {
+        console.error("Signup error:", result.error);
+        setError(result.error.message || result.error.code || "Failed to create account. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+
+      // For drivers, create initial profile with phone and country
+      // Wait a moment for session to be established before TRPC call
+      if (userType === "DRIVER" && phone && country) {
+        // Small delay to ensure session cookie is set
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        try {
+          await trpcClient.users.createInitialDriverProfile.mutate({
+            phone,
+            country,
+          });
+        } catch (profileErr) {
+          // Profile creation failed, but user is created - they can complete profile later
+          console.error("Initial profile creation failed:", profileErr);
+        }
+      }
+
+      // For recruiters, create initial profile with company, phone and country
+      if (userType === "RECRUITER" && companyName && recruiterPhone && recruiterCountry) {
+        // Small delay to ensure session cookie is set
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        try {
+          await trpcClient.users.createInitialRecruiterProfile.mutate({
+            companyName,
+            phone: recruiterPhone,
+            country: recruiterCountry,
+          });
+        } catch (profileErr) {
+          // Profile creation failed, but user is created - they can complete profile later
+          console.error("Initial recruiter profile creation failed:", profileErr);
+        }
+      }
+
       // Redirect to dashboard on success
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Failed to create account. Please try again.");
+      console.error("Signup exception:", err);
+      const errorMessage = err?.message || err?.code || "Failed to create account. Please try again.";
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -62,16 +155,7 @@ export default function SignUpPage() {
       {/* Left Column - Image */}
       <div className="hidden lg:flex flex-col bg-white relative overflow-hidden">
         <div className="absolute top-6 left-6 z-10">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/images/baseline-logo.svg"
-              alt="BaselineDrivers Logo"
-              width={240}
-              height={60}
-              className="h-16 w-auto"
-              priority
-            />
-          </Link>
+          <Logo />
         </div>
 
         <div className="flex items-center justify-center w-full h-full p-8">
@@ -91,16 +175,7 @@ export default function SignUpPage() {
         <div className="w-full max-w-md space-y-8">
           {/* Mobile Logo */}
           <div className="lg:hidden flex justify-center mb-8">
-            <Link href="/">
-              <Image
-                src="/images/baseline-logo.svg"
-                alt="BaselineDrivers Logo"
-                width={200}
-                height={50}
-                className="h-12 w-auto"
-                priority
-              />
-            </Link>
+            <Logo />
           </div>
 
           {/* Header */}
@@ -126,7 +201,7 @@ export default function SignUpPage() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Driver
+              Driver/Jobseeker
             </button>
             <button
               type="button"
@@ -139,6 +214,13 @@ export default function SignUpPage() {
             >
               Recruiter
             </button>
+          </div>
+
+          {/* Notice */}
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+            <p>
+              After you submit your job, one of our agents will review your post and reach out to confirm your account and walk you through the available options. This extra step helps us deliver the highest-quality experience for both our drivers and carriers. Please submit only ONE job until an agent has contacted you.
+            </p>
           </div>
 
           {/* Sign Up with Google */}
@@ -228,17 +310,106 @@ export default function SignUpPage() {
               />
             </div>
 
+            {/* Driver-specific fields */}
+            {userType === "DRIVER" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    className="py-6"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="country">Location</Label>
+                  <Select
+                    value={country}
+                    onValueChange={(value) => setCountry(value as CountryCode)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="py-6 h-auto">
+                      <SelectValue placeholder="Select your country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map((c) => (
+                        <SelectItem key={c.value} value={c.value}>
+                          {c.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            {/* Recruiter-specific fields */}
+            {userType === "RECRUITER" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input
+                    id="companyName"
+                    name="companyName"
+                    type="text"
+                    placeholder="Enter your company name"
+                    className="py-6"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="recruiterPhone">Phone Number</Label>
+                  <Input
+                    id="recruiterPhone"
+                    name="recruiterPhone"
+                    type="tel"
+                    placeholder="Enter your phone number"
+                    className="py-6"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="recruiterCountry">Location</Label>
+                  <Select
+                    value={recruiterCountry}
+                    onValueChange={(value) => setRecruiterCountry(value as CountryCode)}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger className="py-6 h-auto">
+                      <SelectValue placeholder="Select your location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map((c) => (
+                        <SelectItem key={c.value} value={c.value}>
+                          {c.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
             <div className="flex items-start space-x-2">
               <Checkbox id="terms" className="mt-1" />
               <Label htmlFor="terms" className="text-sm font-normal leading-relaxed cursor-pointer">
                 I agree to the{" "}
-                <Link href="/terms" className="text-primary hover:underline">
+                <a href="/terms" className="text-primary hover:underline">
                   Terms of Service
-                </Link>{" "}
+                </a>{" "}
                 and{" "}
-                <Link href="/privacy" className="text-primary hover:underline">
+                <a href="/privacy" className="text-primary hover:underline">
                   Privacy Policy
-                </Link>
+                </a>
               </Label>
             </div>
 

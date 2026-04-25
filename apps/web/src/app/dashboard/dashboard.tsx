@@ -6,6 +6,7 @@ import Link from "next/link";
 import { APPLICATION_STATUS_CONFIG } from "@/types";
 import type { Session, DashboardStats, ApplicationWithJob, Interview } from "@/types";
 import { authClient } from "@/lib/auth-client";
+import { ProfileCompletionBanner } from "@/components/dashboard/profile-completion-banner";
 
 // Mock data - will be replaced when API is implemented
 const MOCK_STATS: DashboardStats = {
@@ -176,6 +177,9 @@ export default function Dashboard({ session }: DashboardProps) {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
+      {/* Profile Completion Banner */}
+      <ProfileCompletionBanner />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
         <div>

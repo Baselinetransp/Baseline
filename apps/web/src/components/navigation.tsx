@@ -25,10 +25,10 @@ export default function Navigation() {
               Find Jobs
             </Link>
             <Link
-              href="/companies"
+              href="/advertise"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Browse Companies
+              Advertise
             </Link>
             <Link
               href="/about"
@@ -81,11 +81,11 @@ export default function Navigation() {
               Find Jobs
             </Link>
             <Link
-              href="/companies"
+              href="/advertise"
               className="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Browse Companies
+              Advertise
             </Link>
             <Link
               href="/about"

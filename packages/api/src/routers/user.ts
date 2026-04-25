@@ -3,6 +3,8 @@ import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure, driverProcedure, recruiterProcedure } from "../index";
 import prisma from "@baseline/db";
 import { ExperienceLevel } from "@baseline/db";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -51,6 +53,31 @@ const companySchema = z.object({
   state: z.string().optional(),
   country: z.string().default("US"),
   logoUrl: z.string().url().optional(),
+});
+
+// ─── Initial Profile Schema (for signup) ──────────────────────────────────────
+const initialDriverProfileSchema = z.object({
+  phone: z.string().min(1, "Phone number is required"),
+  country: z.enum(["NG", "UK"], { message: "Country must be Nigeria or UK" }),
+});
+
+const initialRecruiterProfileSchema = z.object({
+  companyName: z.string().min(2, "Company name is required"),
+  phone: z.string().min(1, "Phone number is required"),
+  country: z.enum(["NG", "UK"], { message: "Country must be Nigeria or UK" }),
+});
+
+// ─── Profile Completion Schema ────────────────────────────────────────────────
+const completeDriverProfileSchema = z.object({
+  state: z.string().min(1, "State/Region is required"),
+  city: z.string().optional(),
+  bio: z.string().max(1000).optional(),
+  experienceYears: z.number().min(0).max(60).optional(),
+  experienceLevel: z.nativeEnum(ExperienceLevel).optional(),
+  licenseClasses: z.array(z.string()).optional(),
+  endorsements: z.array(z.string()).optional(),
+  willingToRelocate: z.boolean().optional(),
+  expectedSalary: z.number().positive().optional(),
 });
 
 export const usersRouter = router({
@@ -166,6 +193,199 @@ export const usersRouter = router({
     });
   }),
 
+  // Driver: Create initial profile (called after signup)
+  createInitialDriverProfile: driverProcedure
+    .input(initialDriverProfileSchema)
+    .mutation(async ({ ctx, input }) => {
+      // Check if profile already exists
+      const existing = await prisma.driverProfile.findUnique({
+        where: { userId: ctx.user.id },
+      });
+
+      if (existing) {
+        // Update existing profile with new info
+        return prisma.driverProfile.update({
+          where: { userId: ctx.user.id },
+          data: {
+            phone: input.phone,
+            country: input.country,
+          },
+        });
+      }
+
+      // Create new profile with minimal info
+      return prisma.driverProfile.create({
+        data: {
+          userId: ctx.user.id,
+          phone: input.phone,
+          country: input.country,
+          licenseClasses: JSON.stringify([]),
+        },
+      });
+    }),
+
+  // Recruiter: Create initial profile with company (called after signup)
+  createInitialRecruiterProfile: recruiterProcedure
+    .input(initialRecruiterProfileSchema)
+    .mutation(async ({ ctx, input }) => {
+      // Check if profile already exists
+      const existing = await prisma.recruiterProfile.findUnique({
+        where: { userId: ctx.user.id },
+        include: { company: true },
+      });
+
+      if (existing) {
+        // Update existing profile and company
+        const updateData: any = {
+          phone: input.phone,
+        };
+
+        // Update company if exists
+        if (existing.companyId) {
+          await prisma.company.update({
+            where: { id: existing.companyId },
+            data: {
+              name: input.companyName,
+              country: input.country,
+            },
+          });
+        }
+
+        return prisma.recruiterProfile.update({
+          where: { userId: ctx.user.id },
+          data: updateData,
+          include: { company: true },
+        });
+      }
+
+      // Create company and recruiter profile in a transaction
+      const slug = input.companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now();
+
+      return prisma.$transaction(async (tx) => {
+        const company = await tx.company.create({
+          data: {
+            name: input.companyName,
+            slug,
+            country: input.country,
+          },
+        });
+
+        const recruiterProfile = await tx.recruiterProfile.create({
+          data: {
+            userId: ctx.user.id,
+            phone: input.phone,
+            companyId: company.id,
+          },
+          include: { company: true },
+        });
+
+        return recruiterProfile;
+      });
+    }),
+
+  // Driver: Complete profile (add state, CV, etc.)
+  completeDriverProfile: driverProcedure
+    .input(completeDriverProfileSchema)
+    .mutation(async ({ ctx, input }) => {
+      const existing = await prisma.driverProfile.findUnique({
+        where: { userId: ctx.user.id },
+      });
+
+      if (!existing) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Please complete initial signup first.",
+        });
+      }
+
+      const data = {
+        state: input.state,
+        city: input.city,
+        bio: input.bio,
+        experienceYears: input.experienceYears,
+        experienceLevel: input.experienceLevel,
+        licenseClasses: input.licenseClasses ? JSON.stringify(input.licenseClasses) : undefined,
+        endorsements: input.endorsements ? JSON.stringify(input.endorsements) : undefined,
+        willingToRelocate: input.willingToRelocate,
+        expectedSalary: input.expectedSalary,
+      };
+
+      const profile = await prisma.driverProfile.update({
+        where: { userId: ctx.user.id },
+        data,
+      });
+
+      return hydrateDriver(profile);
+    }),
+
+  // Driver: Upload/update resume (with base64 file upload)
+  uploadResume: driverProcedure
+    .input(
+      z.object({
+        file: z.object({
+          name: z.string(),
+          data: z.string(), // Base64 encoded PDF
+        }),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const uploadDir = path.join(process.cwd(), "public", "resumes");
+        await fs.mkdir(uploadDir, { recursive: true });
+
+        const fileName = `resume-${ctx.user.id}-${Date.now()}.pdf`;
+        const filePath = path.join(uploadDir, fileName);
+
+        const base64Data = input.file.data.replace(/^data:application\/pdf;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+
+        await fs.writeFile(filePath, buffer);
+        const resumeUrl = `/resumes/${fileName}`;
+
+        return prisma.driverProfile.update({
+          where: { userId: ctx.user.id },
+          data: { resumeUrl },
+        });
+      } catch (error) {
+        console.error("Resume upload failed:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to upload resume.",
+        });
+      }
+    }),
+
+  // Driver: Check if profile is complete for job applications
+  checkProfileComplete: driverProcedure.query(async ({ ctx }) => {
+    const profile = await prisma.driverProfile.findUnique({
+      where: { userId: ctx.user.id },
+    });
+
+    if (!profile) {
+      return {
+        isComplete: false,
+        missingFields: ["phone", "country", "state", "resumeUrl"],
+        message: "Please complete your profile to apply for jobs.",
+      };
+    }
+
+    const missingFields: string[] = [];
+
+    if (!profile.phone) missingFields.push("phone");
+    if (!profile.country) missingFields.push("country");
+    if (!profile.state) missingFields.push("state");
+    if (!profile.resumeUrl) missingFields.push("resumeUrl");
+
+    return {
+      isComplete: missingFields.length === 0,
+      missingFields,
+      message: missingFields.length > 0
+        ? "Please complete your profile to apply for jobs."
+        : "Your profile is complete!",
+      profile: hydrateDriver(profile),
+    };
+  }),
+
   // Delete account
   deleteAccount: protectedProcedure
     .input(
@@ -181,7 +401,7 @@ export const usersRouter = router({
         details: z.string().max(1000).optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ ctx }) => {
       const userId = ctx.user.id;
 
       // Use a transaction to ensure all data is deleted atomically
@@ -191,7 +411,16 @@ export const usersRouter = router({
 
         // Delete driver-related data
         await tx.savedJob.deleteMany({ where: { userId } });
-        await tx.application.deleteMany({ where: { userId } });
+
+        // Get driver profile to delete applications
+        const driverProfile = await tx.driverProfile.findUnique({
+          where: { userId },
+        });
+
+        if (driverProfile) {
+          await tx.application.deleteMany({ where: { driverId: driverProfile.id } });
+        }
+
         await tx.driverProfile.deleteMany({ where: { userId } });
 
         // Delete recruiter-related data

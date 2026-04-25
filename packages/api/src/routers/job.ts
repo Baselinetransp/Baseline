@@ -5,7 +5,7 @@ import prisma, { Prisma } from "@baseline/db";
 import { JobStatus, JobType, ExperienceLevel } from "@baseline/db";
 import slugify from "slugify";
 
-// ─── Input Schemas ─────────────────────────────────────────────────────────────
+// ─── Input Schemas ────────────────────────────────────────────────────────────
 
 const jobCreateSchema = z.object({
   title: z.string().min(5).max(150),

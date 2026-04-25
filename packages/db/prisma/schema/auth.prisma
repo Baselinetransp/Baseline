@@ -22,6 +22,9 @@ model User {
   driverProfile  DriverProfile?
   recruiterProfile RecruiterProfile?
 
+  // Banner ad submissions
+  bannerAdSubmissions BannerAdSubmission[]
+
   @@unique([email])
   @@map("user")
 }

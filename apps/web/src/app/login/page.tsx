@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { authClient } from "@/lib/auth-client";
+import Logo from "@/components/logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -59,16 +60,7 @@ export default function LoginPage() {
       {/* Left Column - Image */}
       <div className="hidden lg:flex flex-1 flex-col bg-white relative overflow-hidden">
         <div className="absolute top-6 left-6 z-10">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/images/baseline-logo.svg"
-              alt="BaselineDrivers Logo"
-              width={240}
-              height={60}
-              className="h-16 w-auto"
-              priority
-            />
-          </Link>
+          <Logo />
         </div>
 
         <div className="flex-1 relative">
@@ -87,16 +79,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           {/* Mobile Logo */}
           <div className="lg:hidden flex justify-center mb-8">
-            <Link href="/">
-              <Image
-                src="/images/baseline-logo.svg"
-                alt="BaselineDrivers Logo"
-                width={200}
-                height={50}
-                className="h-12 w-auto"
-                priority
-              />
-            </Link>
+            <Logo />
           </div>
 
           {/* Header */}

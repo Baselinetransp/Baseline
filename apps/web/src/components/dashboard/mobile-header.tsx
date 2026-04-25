@@ -40,7 +40,6 @@ const recruiterNavItems = [
   { icon: PlusCircle, label: "Post New Job", href: "/dashboard/jobs/new" },
   { icon: Users, label: "Applications", href: "/dashboard/recruiter/applications" },
   { icon: MessageSquare, label: "Messages", href: "/dashboard/messages", badge: 1 },
-  { icon: Building2, label: "Company Profile", href: "/dashboard/company" },
   { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
   { icon: Settings, label: "Settings", href: "/dashboard/settings" },
   { icon: HelpCircle, label: "Help Center", href: "/dashboard/help" },
@@ -67,7 +66,6 @@ export default function MobileHeader() {
     if (pathname === "/dashboard/jobs") return "My Jobs";
     if (pathname === "/dashboard/jobs/new") return "Post New Job";
     if (pathname === "/dashboard/recruiter/applications") return "Applications";
-    if (pathname === "/dashboard/company") return "Company Profile";
     if (pathname === "/dashboard/analytics") return "Analytics";
     if (pathname.startsWith("/dashboard/jobs/") && pathname.includes("/applications")) return "Job Applications";
     return "Dashboard";
